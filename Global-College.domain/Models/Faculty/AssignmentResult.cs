@@ -15,6 +15,6 @@ namespace Global_College.domain.Models.Faculty
         public StudentProfile? StudentProfile { get; set; } // Navigation property to StudentProfile. Allows access to the related StudentProfile entity.
         public int StudentProfileId { get; set; } // Foreign key to the StudentProfile entity. Calls the ID from the StudentProfile class.
         public Assignment? Assignment { get; set; } // Navigation property to Assignment. Allows access to the related Assignment entity.
-        public int AssignmentID { get; set; }  // Foreign key to Assignment. Calls the ID from the Assignment class.
+        public int AssignmentId { get; set; }  // Foreign key to Assignment. Calls the ID from the Assignment class.
     }
 }
