@@ -16,4 +16,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Global-College.domain\Global-College.domain.csproj" />
+  </ItemGroup>
+
 </Project>
