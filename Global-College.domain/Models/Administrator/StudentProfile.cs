@@ -14,7 +14,7 @@ namespace Global_College.domain.Models.Administrator
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
-        public string StudentNumber { get; set; } = string.Empty; // Unique student number for identification
+        public string StudentNumber { get; set; } = string.Empty; // Unique student number used to identify the student
 
     }
 }
