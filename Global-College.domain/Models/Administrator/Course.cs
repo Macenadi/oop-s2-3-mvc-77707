@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Global_College.domain.Models.Faculty;
+using Global_College.domain.Models.Student;
 
 namespace Global_College.domain.Models.Administrator
 {
@@ -11,11 +14,23 @@ namespace Global_College.domain.Models.Administrator
     {
         // Represents a course and its associated branch.
         public int Id { get; set; }
+
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; } = string.Empty;
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public Branch? Branch { get; set; }     // Navigation property to Branch. Allows access to the related Branch entity.
         public int BranchId { get; set; }       // Foreign key to Branch. Calls the ID from the Branch class.
+
+
+        // Navigation between entities. Where course is connected with CourseEnrolments, FacultyCourseAssignment, assignments, and exams.
+        // These collections allow access to the related entities associated with this Course.
+        public ICollection<CourseEnrolment> CourseEnrolments { get; set; } = new List<CourseEnrolment>();
+        public ICollection<FacultyCourseAssignment> FacultyCourseAssignments { get; set; } = new List<FacultyCourseAssignment>();
+        public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+        public ICollection<Exam> Exams { get; set; } = new List<Exam>();
+
 
         // Validates that EndDate is not earlier than StartDate
         public void Validate() 
