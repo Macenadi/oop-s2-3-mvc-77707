@@ -22,8 +22,7 @@ namespace Global_College.mvc.Controllers
         // GET: Courses
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Courses.Include(c => c.Branch);
-            return View(await applicationDbContext.ToListAsync());
+            return View(await _context.Courses.ToListAsync());
         }
 
         // GET: Courses/Details/5
@@ -35,7 +34,6 @@ namespace Global_College.mvc.Controllers
             }
 
             var course = await _context.Courses
-                .Include(c => c.Branch)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (course == null)
             {
@@ -48,38 +46,24 @@ namespace Global_College.mvc.Controllers
         // GET: Courses/Create
         public IActionResult Create()
         {
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name");
             return View();
         }
-
 
         // POST: Courses/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,StartDate,EndDate,BranchId")] Course course)
+        public async Task<IActionResult> Create([Bind("Id,Name,StartDate,EndDate")] Course course)
         {
-            try
-            {
-                course.Validate();
-            }
-            catch (ArgumentException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-
             if (ModelState.IsValid)
             {
                 _context.Add(course);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", course.BranchId);
             return View(course);
         }
-
 
         // GET: Courses/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -94,7 +78,6 @@ namespace Global_College.mvc.Controllers
             {
                 return NotFound();
             }
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", course.BranchId);
             return View(course);
         }
 
@@ -103,20 +86,11 @@ namespace Global_College.mvc.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,StartDate,EndDate,BranchId")] Course course)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,StartDate,EndDate")] Course course)
         {
             if (id != course.Id)
             {
                 return NotFound();
-            }
-
-            try
-            {
-                course.Validate();
-            }
-            catch (ArgumentException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
             }
 
             if (ModelState.IsValid)
@@ -137,11 +111,8 @@ namespace Global_College.mvc.Controllers
                         throw;
                     }
                 }
-
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", course.BranchId);
             return View(course);
         }
 
@@ -154,7 +125,6 @@ namespace Global_College.mvc.Controllers
             }
 
             var course = await _context.Courses
-                .Include(c => c.Branch)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (course == null)
             {

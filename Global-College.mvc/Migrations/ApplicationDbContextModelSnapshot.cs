@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Global_College.mvc.Data.Migrations
+namespace Global_College.mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -32,11 +32,13 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -63,7 +65,7 @@ namespace Global_College.mvc.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Global_College.domain.Models.Administrator.Course", b =>
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.BranchCourse", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,19 +76,77 @@ namespace Global_College.mvc.Data.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("BranchId", "CourseId")
+                        .IsUnique();
+
+                    b.ToTable("BranchCourses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BranchId = 1,
+                            CourseId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BranchId = 1,
+                            CourseId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            BranchId = 2,
+                            CourseId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            BranchId = 2,
+                            CourseId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            BranchId = 3,
+                            CourseId = 4
+                        },
+                        new
+                        {
+                            Id = 6,
+                            BranchId = 3,
+                            CourseId = 5
+                        });
+                });
+
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.Course", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateOnly>("EndDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BranchId");
 
                     b.ToTable("Courses");
 
@@ -94,7 +154,6 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 1,
-                            BranchId = 1,
                             EndDate = new DateOnly(2025, 12, 31),
                             Name = "Computer Science",
                             StartDate = new DateOnly(2025, 1, 1)
@@ -102,7 +161,6 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 2,
-                            BranchId = 1,
                             EndDate = new DateOnly(2025, 12, 31),
                             Name = "Business",
                             StartDate = new DateOnly(2025, 1, 1)
@@ -110,7 +168,6 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 3,
-                            BranchId = 2,
                             EndDate = new DateOnly(2025, 12, 31),
                             Name = "Engineering",
                             StartDate = new DateOnly(2025, 1, 1)
@@ -118,7 +175,6 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 4,
-                            BranchId = 3,
                             EndDate = new DateOnly(2025, 12, 31),
                             Name = "Design",
                             StartDate = new DateOnly(2025, 1, 1)
@@ -126,7 +182,6 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 5,
-                            BranchId = 2,
                             EndDate = new DateOnly(2025, 12, 31),
                             Name = "Marketing",
                             StartDate = new DateOnly(2025, 1, 1)
@@ -141,7 +196,7 @@ namespace Global_College.mvc.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CourseId")
+                    b.Property<int>("BranchCourseId")
                         .HasColumnType("int");
 
                     b.Property<DateOnly>("EnrolDate")
@@ -156,9 +211,10 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseId");
+                    b.HasIndex("BranchCourseId");
 
-                    b.HasIndex("StudentProfileId");
+                    b.HasIndex("StudentProfileId", "BranchCourseId")
+                        .IsUnique();
 
                     b.ToTable("CourseEnrolments");
 
@@ -166,7 +222,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CourseId = 2,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 1
@@ -174,7 +230,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 2,
-                            CourseId = 3,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 2
@@ -182,7 +238,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 3,
-                            CourseId = 4,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 3
@@ -190,7 +246,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 4,
-                            CourseId = 5,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 4
@@ -198,7 +254,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 5,
-                            CourseId = 1,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 5
@@ -206,7 +262,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 6,
-                            CourseId = 2,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 6
@@ -214,7 +270,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 7,
-                            CourseId = 3,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 7
@@ -222,7 +278,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 8,
-                            CourseId = 4,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 8
@@ -230,7 +286,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 9,
-                            CourseId = 5,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 9
@@ -238,7 +294,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 10,
-                            CourseId = 1,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 10
@@ -246,7 +302,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 11,
-                            CourseId = 2,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 11
@@ -254,7 +310,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 12,
-                            CourseId = 3,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 12
@@ -262,7 +318,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 13,
-                            CourseId = 4,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 13
@@ -270,7 +326,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 14,
-                            CourseId = 5,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 14
@@ -278,7 +334,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 15,
-                            CourseId = 1,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 15
@@ -286,7 +342,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 16,
-                            CourseId = 2,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 16
@@ -294,7 +350,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 17,
-                            CourseId = 3,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 17
@@ -302,7 +358,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 18,
-                            CourseId = 4,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 18
@@ -310,7 +366,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 19,
-                            CourseId = 5,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 19
@@ -318,7 +374,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 20,
-                            CourseId = 1,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 20
@@ -326,7 +382,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 21,
-                            CourseId = 2,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 21
@@ -334,7 +390,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 22,
-                            CourseId = 3,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 22
@@ -342,7 +398,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 23,
-                            CourseId = 4,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 23
@@ -350,7 +406,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 24,
-                            CourseId = 5,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 24
@@ -358,7 +414,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 25,
-                            CourseId = 1,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 25
@@ -366,7 +422,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 26,
-                            CourseId = 2,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 26
@@ -374,7 +430,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 27,
-                            CourseId = 3,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 27
@@ -382,7 +438,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 28,
-                            CourseId = 4,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 28
@@ -390,7 +446,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 29,
-                            CourseId = 5,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 29
@@ -398,7 +454,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 30,
-                            CourseId = 1,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 30
@@ -406,7 +462,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 31,
-                            CourseId = 2,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 31
@@ -414,7 +470,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 32,
-                            CourseId = 3,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 32
@@ -422,7 +478,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 33,
-                            CourseId = 4,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 33
@@ -430,7 +486,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 34,
-                            CourseId = 5,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 34
@@ -438,7 +494,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 35,
-                            CourseId = 1,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 35
@@ -446,7 +502,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 36,
-                            CourseId = 2,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 36
@@ -454,7 +510,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 37,
-                            CourseId = 3,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 37
@@ -462,7 +518,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 38,
-                            CourseId = 4,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 38
@@ -470,7 +526,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 39,
-                            CourseId = 5,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 39
@@ -478,7 +534,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 40,
-                            CourseId = 1,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 40
@@ -486,7 +542,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 41,
-                            CourseId = 2,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 41
@@ -494,7 +550,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 42,
-                            CourseId = 3,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 42
@@ -502,7 +558,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 43,
-                            CourseId = 4,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 43
@@ -510,7 +566,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 44,
-                            CourseId = 5,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 44
@@ -518,7 +574,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 45,
-                            CourseId = 1,
+                            BranchCourseId = 3,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 45
@@ -526,7 +582,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 46,
-                            CourseId = 2,
+                            BranchCourseId = 4,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 46
@@ -534,7 +590,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 47,
-                            CourseId = 3,
+                            BranchCourseId = 5,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 47
@@ -542,7 +598,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 48,
-                            CourseId = 4,
+                            BranchCourseId = 6,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 48
@@ -550,7 +606,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 49,
-                            CourseId = 5,
+                            BranchCourseId = 1,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 49
@@ -558,7 +614,7 @@ namespace Global_College.mvc.Data.Migrations
                         new
                         {
                             Id = 50,
-                            CourseId = 1,
+                            BranchCourseId = 2,
                             EnrolDate = new DateOnly(2025, 1, 1),
                             Status = "Enrolled",
                             StudentProfileId = 50
@@ -586,68 +642,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("FacultyProfileId");
 
                     b.ToTable("FacultyCourseAssignments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CourseId = 2,
-                            FacultyProfileId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CourseId = 3,
-                            FacultyProfileId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CourseId = 4,
-                            FacultyProfileId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CourseId = 5,
-                            FacultyProfileId = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CourseId = 1,
-                            FacultyProfileId = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CourseId = 2,
-                            FacultyProfileId = 6
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CourseId = 3,
-                            FacultyProfileId = 7
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CourseId = 4,
-                            FacultyProfileId = 8
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CourseId = 5,
-                            FacultyProfileId = 9
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CourseId = 1,
-                            FacultyProfileId = 10
-                        });
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Administrator.FacultyProfile", b =>
@@ -664,7 +658,8 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("IdentityUserId")
                         .IsRequired()
@@ -771,7 +766,8 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -779,7 +775,8 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("IdentityUserId")
                         .IsRequired()
@@ -791,7 +788,8 @@ namespace Global_College.mvc.Data.Migrations
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
 
                     b.HasKey("Id");
 
@@ -806,7 +804,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 1",
                             IdentityUserId = "student-user-1",
                             Phone = "0000001",
-                            StudentNumber = "STU001"
+                            StudentNumber = "S0001"
                         },
                         new
                         {
@@ -816,7 +814,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 2",
                             IdentityUserId = "student-user-2",
                             Phone = "0000002",
-                            StudentNumber = "STU002"
+                            StudentNumber = "S0002"
                         },
                         new
                         {
@@ -826,7 +824,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 3",
                             IdentityUserId = "student-user-3",
                             Phone = "0000003",
-                            StudentNumber = "STU003"
+                            StudentNumber = "S0003"
                         },
                         new
                         {
@@ -836,7 +834,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 4",
                             IdentityUserId = "student-user-4",
                             Phone = "0000004",
-                            StudentNumber = "STU004"
+                            StudentNumber = "S0004"
                         },
                         new
                         {
@@ -846,7 +844,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 5",
                             IdentityUserId = "student-user-5",
                             Phone = "0000005",
-                            StudentNumber = "STU005"
+                            StudentNumber = "S0005"
                         },
                         new
                         {
@@ -856,7 +854,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 6",
                             IdentityUserId = "student-user-6",
                             Phone = "0000006",
-                            StudentNumber = "STU006"
+                            StudentNumber = "S0006"
                         },
                         new
                         {
@@ -866,7 +864,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 7",
                             IdentityUserId = "student-user-7",
                             Phone = "0000007",
-                            StudentNumber = "STU007"
+                            StudentNumber = "S0007"
                         },
                         new
                         {
@@ -876,7 +874,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 8",
                             IdentityUserId = "student-user-8",
                             Phone = "0000008",
-                            StudentNumber = "STU008"
+                            StudentNumber = "S0008"
                         },
                         new
                         {
@@ -886,7 +884,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 9",
                             IdentityUserId = "student-user-9",
                             Phone = "0000009",
-                            StudentNumber = "STU009"
+                            StudentNumber = "S0009"
                         },
                         new
                         {
@@ -896,7 +894,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 10",
                             IdentityUserId = "student-user-10",
                             Phone = "00000010",
-                            StudentNumber = "STU010"
+                            StudentNumber = "S0010"
                         },
                         new
                         {
@@ -906,7 +904,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 11",
                             IdentityUserId = "student-user-11",
                             Phone = "00000011",
-                            StudentNumber = "STU011"
+                            StudentNumber = "S0011"
                         },
                         new
                         {
@@ -916,7 +914,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 12",
                             IdentityUserId = "student-user-12",
                             Phone = "00000012",
-                            StudentNumber = "STU012"
+                            StudentNumber = "S0012"
                         },
                         new
                         {
@@ -926,7 +924,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 13",
                             IdentityUserId = "student-user-13",
                             Phone = "00000013",
-                            StudentNumber = "STU013"
+                            StudentNumber = "S0013"
                         },
                         new
                         {
@@ -936,7 +934,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 14",
                             IdentityUserId = "student-user-14",
                             Phone = "00000014",
-                            StudentNumber = "STU014"
+                            StudentNumber = "S0014"
                         },
                         new
                         {
@@ -946,7 +944,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 15",
                             IdentityUserId = "student-user-15",
                             Phone = "00000015",
-                            StudentNumber = "STU015"
+                            StudentNumber = "S0015"
                         },
                         new
                         {
@@ -956,7 +954,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 16",
                             IdentityUserId = "student-user-16",
                             Phone = "00000016",
-                            StudentNumber = "STU016"
+                            StudentNumber = "S0016"
                         },
                         new
                         {
@@ -966,7 +964,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 17",
                             IdentityUserId = "student-user-17",
                             Phone = "00000017",
-                            StudentNumber = "STU017"
+                            StudentNumber = "S0017"
                         },
                         new
                         {
@@ -976,7 +974,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 18",
                             IdentityUserId = "student-user-18",
                             Phone = "00000018",
-                            StudentNumber = "STU018"
+                            StudentNumber = "S0018"
                         },
                         new
                         {
@@ -986,7 +984,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 19",
                             IdentityUserId = "student-user-19",
                             Phone = "00000019",
-                            StudentNumber = "STU019"
+                            StudentNumber = "S0019"
                         },
                         new
                         {
@@ -996,7 +994,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 20",
                             IdentityUserId = "student-user-20",
                             Phone = "00000020",
-                            StudentNumber = "STU020"
+                            StudentNumber = "S0020"
                         },
                         new
                         {
@@ -1006,7 +1004,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 21",
                             IdentityUserId = "student-user-21",
                             Phone = "00000021",
-                            StudentNumber = "STU021"
+                            StudentNumber = "S0021"
                         },
                         new
                         {
@@ -1016,7 +1014,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 22",
                             IdentityUserId = "student-user-22",
                             Phone = "00000022",
-                            StudentNumber = "STU022"
+                            StudentNumber = "S0022"
                         },
                         new
                         {
@@ -1026,7 +1024,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 23",
                             IdentityUserId = "student-user-23",
                             Phone = "00000023",
-                            StudentNumber = "STU023"
+                            StudentNumber = "S0023"
                         },
                         new
                         {
@@ -1036,7 +1034,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 24",
                             IdentityUserId = "student-user-24",
                             Phone = "00000024",
-                            StudentNumber = "STU024"
+                            StudentNumber = "S0024"
                         },
                         new
                         {
@@ -1046,7 +1044,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 25",
                             IdentityUserId = "student-user-25",
                             Phone = "00000025",
-                            StudentNumber = "STU025"
+                            StudentNumber = "S0025"
                         },
                         new
                         {
@@ -1056,7 +1054,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 26",
                             IdentityUserId = "student-user-26",
                             Phone = "00000026",
-                            StudentNumber = "STU026"
+                            StudentNumber = "S0026"
                         },
                         new
                         {
@@ -1066,7 +1064,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 27",
                             IdentityUserId = "student-user-27",
                             Phone = "00000027",
-                            StudentNumber = "STU027"
+                            StudentNumber = "S0027"
                         },
                         new
                         {
@@ -1076,7 +1074,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 28",
                             IdentityUserId = "student-user-28",
                             Phone = "00000028",
-                            StudentNumber = "STU028"
+                            StudentNumber = "S0028"
                         },
                         new
                         {
@@ -1086,7 +1084,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 29",
                             IdentityUserId = "student-user-29",
                             Phone = "00000029",
-                            StudentNumber = "STU029"
+                            StudentNumber = "S0029"
                         },
                         new
                         {
@@ -1096,7 +1094,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 30",
                             IdentityUserId = "student-user-30",
                             Phone = "00000030",
-                            StudentNumber = "STU030"
+                            StudentNumber = "S0030"
                         },
                         new
                         {
@@ -1106,7 +1104,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 31",
                             IdentityUserId = "student-user-31",
                             Phone = "00000031",
-                            StudentNumber = "STU031"
+                            StudentNumber = "S0031"
                         },
                         new
                         {
@@ -1116,7 +1114,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 32",
                             IdentityUserId = "student-user-32",
                             Phone = "00000032",
-                            StudentNumber = "STU032"
+                            StudentNumber = "S0032"
                         },
                         new
                         {
@@ -1126,7 +1124,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 33",
                             IdentityUserId = "student-user-33",
                             Phone = "00000033",
-                            StudentNumber = "STU033"
+                            StudentNumber = "S0033"
                         },
                         new
                         {
@@ -1136,7 +1134,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 34",
                             IdentityUserId = "student-user-34",
                             Phone = "00000034",
-                            StudentNumber = "STU034"
+                            StudentNumber = "S0034"
                         },
                         new
                         {
@@ -1146,7 +1144,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 35",
                             IdentityUserId = "student-user-35",
                             Phone = "00000035",
-                            StudentNumber = "STU035"
+                            StudentNumber = "S0035"
                         },
                         new
                         {
@@ -1156,7 +1154,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 36",
                             IdentityUserId = "student-user-36",
                             Phone = "00000036",
-                            StudentNumber = "STU036"
+                            StudentNumber = "S0036"
                         },
                         new
                         {
@@ -1166,7 +1164,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 37",
                             IdentityUserId = "student-user-37",
                             Phone = "00000037",
-                            StudentNumber = "STU037"
+                            StudentNumber = "S0037"
                         },
                         new
                         {
@@ -1176,7 +1174,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 38",
                             IdentityUserId = "student-user-38",
                             Phone = "00000038",
-                            StudentNumber = "STU038"
+                            StudentNumber = "S0038"
                         },
                         new
                         {
@@ -1186,7 +1184,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 39",
                             IdentityUserId = "student-user-39",
                             Phone = "00000039",
-                            StudentNumber = "STU039"
+                            StudentNumber = "S0039"
                         },
                         new
                         {
@@ -1196,7 +1194,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 40",
                             IdentityUserId = "student-user-40",
                             Phone = "00000040",
-                            StudentNumber = "STU040"
+                            StudentNumber = "S0040"
                         },
                         new
                         {
@@ -1206,7 +1204,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 41",
                             IdentityUserId = "student-user-41",
                             Phone = "00000041",
-                            StudentNumber = "STU041"
+                            StudentNumber = "S0041"
                         },
                         new
                         {
@@ -1216,7 +1214,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 42",
                             IdentityUserId = "student-user-42",
                             Phone = "00000042",
-                            StudentNumber = "STU042"
+                            StudentNumber = "S0042"
                         },
                         new
                         {
@@ -1226,7 +1224,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 43",
                             IdentityUserId = "student-user-43",
                             Phone = "00000043",
-                            StudentNumber = "STU043"
+                            StudentNumber = "S0043"
                         },
                         new
                         {
@@ -1236,7 +1234,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 44",
                             IdentityUserId = "student-user-44",
                             Phone = "00000044",
-                            StudentNumber = "STU044"
+                            StudentNumber = "S0044"
                         },
                         new
                         {
@@ -1246,7 +1244,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 45",
                             IdentityUserId = "student-user-45",
                             Phone = "00000045",
-                            StudentNumber = "STU045"
+                            StudentNumber = "S0045"
                         },
                         new
                         {
@@ -1256,7 +1254,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 46",
                             IdentityUserId = "student-user-46",
                             Phone = "00000046",
-                            StudentNumber = "STU046"
+                            StudentNumber = "S0046"
                         },
                         new
                         {
@@ -1266,7 +1264,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 47",
                             IdentityUserId = "student-user-47",
                             Phone = "00000047",
-                            StudentNumber = "STU047"
+                            StudentNumber = "S0047"
                         },
                         new
                         {
@@ -1276,7 +1274,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 48",
                             IdentityUserId = "student-user-48",
                             Phone = "00000048",
-                            StudentNumber = "STU048"
+                            StudentNumber = "S0048"
                         },
                         new
                         {
@@ -1286,7 +1284,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 49",
                             IdentityUserId = "student-user-49",
                             Phone = "00000049",
-                            StudentNumber = "STU049"
+                            StudentNumber = "S0049"
                         },
                         new
                         {
@@ -1296,7 +1294,7 @@ namespace Global_College.mvc.Data.Migrations
                             FullName = "Student 50",
                             IdentityUserId = "student-user-50",
                             Phone = "00000050",
-                            StudentNumber = "STU050"
+                            StudentNumber = "S0050"
                         });
                 });
 
@@ -1326,48 +1324,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Assignments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CourseId = 1,
-                            DueDate = new DateOnly(2025, 5, 1),
-                            MaxScore = 100,
-                            Title = "Assignment 1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CourseId = 2,
-                            DueDate = new DateOnly(2025, 5, 2),
-                            MaxScore = 100,
-                            Title = "Assignment 2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CourseId = 3,
-                            DueDate = new DateOnly(2025, 5, 3),
-                            MaxScore = 100,
-                            Title = "Assignment 3"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CourseId = 4,
-                            DueDate = new DateOnly(2025, 5, 4),
-                            MaxScore = 100,
-                            Title = "Assignment 4"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CourseId = 5,
-                            DueDate = new DateOnly(2025, 5, 5),
-                            MaxScore = 100,
-                            Title = "Assignment 5"
-                        });
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Faculty.AssignmentResult", b =>
@@ -1398,408 +1354,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("StudentProfileId");
 
                     b.ToTable("AssignmentResults");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 6
-                        },
-                        new
-                        {
-                            Id = 7,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 7
-                        },
-                        new
-                        {
-                            Id = 8,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 8
-                        },
-                        new
-                        {
-                            Id = 9,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 9
-                        },
-                        new
-                        {
-                            Id = 10,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 10
-                        },
-                        new
-                        {
-                            Id = 11,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 11
-                        },
-                        new
-                        {
-                            Id = 12,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 12
-                        },
-                        new
-                        {
-                            Id = 13,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 13
-                        },
-                        new
-                        {
-                            Id = 14,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 14
-                        },
-                        new
-                        {
-                            Id = 15,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 15
-                        },
-                        new
-                        {
-                            Id = 16,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 16
-                        },
-                        new
-                        {
-                            Id = 17,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 17
-                        },
-                        new
-                        {
-                            Id = 18,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 18
-                        },
-                        new
-                        {
-                            Id = 19,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 19
-                        },
-                        new
-                        {
-                            Id = 20,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 20
-                        },
-                        new
-                        {
-                            Id = 21,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 21
-                        },
-                        new
-                        {
-                            Id = 22,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 22
-                        },
-                        new
-                        {
-                            Id = 23,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 23
-                        },
-                        new
-                        {
-                            Id = 24,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 24
-                        },
-                        new
-                        {
-                            Id = 25,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 25
-                        },
-                        new
-                        {
-                            Id = 26,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 26
-                        },
-                        new
-                        {
-                            Id = 27,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 27
-                        },
-                        new
-                        {
-                            Id = 28,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 28
-                        },
-                        new
-                        {
-                            Id = 29,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 29
-                        },
-                        new
-                        {
-                            Id = 30,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 30
-                        },
-                        new
-                        {
-                            Id = 31,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 31
-                        },
-                        new
-                        {
-                            Id = 32,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 32
-                        },
-                        new
-                        {
-                            Id = 33,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 33
-                        },
-                        new
-                        {
-                            Id = 34,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 34
-                        },
-                        new
-                        {
-                            Id = 35,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 35
-                        },
-                        new
-                        {
-                            Id = 36,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 36
-                        },
-                        new
-                        {
-                            Id = 37,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 37
-                        },
-                        new
-                        {
-                            Id = 38,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 38
-                        },
-                        new
-                        {
-                            Id = 39,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 39
-                        },
-                        new
-                        {
-                            Id = 40,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 40
-                        },
-                        new
-                        {
-                            Id = 41,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 41
-                        },
-                        new
-                        {
-                            Id = 42,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 42
-                        },
-                        new
-                        {
-                            Id = 43,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 43
-                        },
-                        new
-                        {
-                            Id = 44,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 44
-                        },
-                        new
-                        {
-                            Id = 45,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 45
-                        },
-                        new
-                        {
-                            Id = 46,
-                            AssignmentId = 2,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 46
-                        },
-                        new
-                        {
-                            Id = 47,
-                            AssignmentId = 3,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 47
-                        },
-                        new
-                        {
-                            Id = 48,
-                            AssignmentId = 4,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 48
-                        },
-                        new
-                        {
-                            Id = 49,
-                            AssignmentId = 5,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 49
-                        },
-                        new
-                        {
-                            Id = 50,
-                            AssignmentId = 1,
-                            Feedback = "Good work",
-                            Score = 75,
-                            StudentProfileId = 50
-                        });
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Faculty.AttendanceRecord", b =>
@@ -1824,358 +1378,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("CourseEnrolmentId");
 
                     b.ToTable("AttendanceRecords");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CourseEnrolmentId = 1,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CourseEnrolmentId = 2,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CourseEnrolmentId = 3,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CourseEnrolmentId = 4,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CourseEnrolmentId = 5,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CourseEnrolmentId = 6,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CourseEnrolmentId = 7,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CourseEnrolmentId = 8,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CourseEnrolmentId = 9,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CourseEnrolmentId = 10,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CourseEnrolmentId = 11,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CourseEnrolmentId = 12,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CourseEnrolmentId = 13,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CourseEnrolmentId = 14,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 15,
-                            CourseEnrolmentId = 15,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CourseEnrolmentId = 16,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 17,
-                            CourseEnrolmentId = 17,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 18,
-                            CourseEnrolmentId = 18,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 19,
-                            CourseEnrolmentId = 19,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 20,
-                            CourseEnrolmentId = 20,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 21,
-                            CourseEnrolmentId = 21,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 22,
-                            CourseEnrolmentId = 22,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 23,
-                            CourseEnrolmentId = 23,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 24,
-                            CourseEnrolmentId = 24,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 25,
-                            CourseEnrolmentId = 25,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 26,
-                            CourseEnrolmentId = 26,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 27,
-                            CourseEnrolmentId = 27,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 28,
-                            CourseEnrolmentId = 28,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 29,
-                            CourseEnrolmentId = 29,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 30,
-                            CourseEnrolmentId = 30,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 31,
-                            CourseEnrolmentId = 31,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 32,
-                            CourseEnrolmentId = 32,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 33,
-                            CourseEnrolmentId = 33,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 34,
-                            CourseEnrolmentId = 34,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 35,
-                            CourseEnrolmentId = 35,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 36,
-                            CourseEnrolmentId = 36,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 37,
-                            CourseEnrolmentId = 37,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 38,
-                            CourseEnrolmentId = 38,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 39,
-                            CourseEnrolmentId = 39,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 40,
-                            CourseEnrolmentId = 40,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 41,
-                            CourseEnrolmentId = 41,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 42,
-                            CourseEnrolmentId = 42,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 43,
-                            CourseEnrolmentId = 43,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 44,
-                            CourseEnrolmentId = 44,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 45,
-                            CourseEnrolmentId = 45,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 46,
-                            CourseEnrolmentId = 46,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 47,
-                            CourseEnrolmentId = 47,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 48,
-                            CourseEnrolmentId = 48,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 49,
-                            CourseEnrolmentId = 49,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        },
-                        new
-                        {
-                            Id = 50,
-                            CourseEnrolmentId = 50,
-                            Date = new DateOnly(2025, 2, 1),
-                            Present = true
-                        });
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Student.Exam", b =>
@@ -2207,53 +1409,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("CourseId");
 
                     b.ToTable("Exams");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CourseId = 1,
-                            Date = new DateOnly(2025, 6, 1),
-                            MaxScore = 100,
-                            ResultsReleased = true,
-                            Title = "Exam 1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CourseId = 2,
-                            Date = new DateOnly(2025, 6, 2),
-                            MaxScore = 100,
-                            ResultsReleased = true,
-                            Title = "Exam 2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CourseId = 3,
-                            Date = new DateOnly(2025, 6, 3),
-                            MaxScore = 100,
-                            ResultsReleased = true,
-                            Title = "Exam 3"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CourseId = 4,
-                            Date = new DateOnly(2025, 6, 4),
-                            MaxScore = 100,
-                            ResultsReleased = true,
-                            Title = "Exam 4"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CourseId = 5,
-                            Date = new DateOnly(2025, 6, 5),
-                            MaxScore = 100,
-                            ResultsReleased = true,
-                            Title = "Exam 5"
-                        });
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Student.ExamResult", b =>
@@ -2284,408 +1439,6 @@ namespace Global_College.mvc.Data.Migrations
                     b.HasIndex("StudentProfileId");
 
                     b.ToTable("ExamResults");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 3
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 4
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 5
-                        },
-                        new
-                        {
-                            Id = 6,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 6
-                        },
-                        new
-                        {
-                            Id = 7,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 7
-                        },
-                        new
-                        {
-                            Id = 8,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 8
-                        },
-                        new
-                        {
-                            Id = 9,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 9
-                        },
-                        new
-                        {
-                            Id = 10,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 10
-                        },
-                        new
-                        {
-                            Id = 11,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 11
-                        },
-                        new
-                        {
-                            Id = 12,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 12
-                        },
-                        new
-                        {
-                            Id = 13,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 13
-                        },
-                        new
-                        {
-                            Id = 14,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 14
-                        },
-                        new
-                        {
-                            Id = 15,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 15
-                        },
-                        new
-                        {
-                            Id = 16,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 16
-                        },
-                        new
-                        {
-                            Id = 17,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 17
-                        },
-                        new
-                        {
-                            Id = 18,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 18
-                        },
-                        new
-                        {
-                            Id = 19,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 19
-                        },
-                        new
-                        {
-                            Id = 20,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 20
-                        },
-                        new
-                        {
-                            Id = 21,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 21
-                        },
-                        new
-                        {
-                            Id = 22,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 22
-                        },
-                        new
-                        {
-                            Id = 23,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 23
-                        },
-                        new
-                        {
-                            Id = 24,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 24
-                        },
-                        new
-                        {
-                            Id = 25,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 25
-                        },
-                        new
-                        {
-                            Id = 26,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 26
-                        },
-                        new
-                        {
-                            Id = 27,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 27
-                        },
-                        new
-                        {
-                            Id = 28,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 28
-                        },
-                        new
-                        {
-                            Id = 29,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 29
-                        },
-                        new
-                        {
-                            Id = 30,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 30
-                        },
-                        new
-                        {
-                            Id = 31,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 31
-                        },
-                        new
-                        {
-                            Id = 32,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 32
-                        },
-                        new
-                        {
-                            Id = 33,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 33
-                        },
-                        new
-                        {
-                            Id = 34,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 34
-                        },
-                        new
-                        {
-                            Id = 35,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 35
-                        },
-                        new
-                        {
-                            Id = 36,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 36
-                        },
-                        new
-                        {
-                            Id = 37,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 37
-                        },
-                        new
-                        {
-                            Id = 38,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 38
-                        },
-                        new
-                        {
-                            Id = 39,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 39
-                        },
-                        new
-                        {
-                            Id = 40,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 40
-                        },
-                        new
-                        {
-                            Id = 41,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 41
-                        },
-                        new
-                        {
-                            Id = 42,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 42
-                        },
-                        new
-                        {
-                            Id = 43,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 43
-                        },
-                        new
-                        {
-                            Id = 44,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 44
-                        },
-                        new
-                        {
-                            Id = 45,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 45
-                        },
-                        new
-                        {
-                            Id = 46,
-                            ExamId = 2,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 46
-                        },
-                        new
-                        {
-                            Id = 47,
-                            ExamId = 3,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 47
-                        },
-                        new
-                        {
-                            Id = 48,
-                            ExamId = 4,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 48
-                        },
-                        new
-                        {
-                            Id = 49,
-                            ExamId = 5,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 49
-                        },
-                        new
-                        {
-                            Id = 50,
-                            ExamId = 1,
-                            Grade = "B",
-                            Score = 70,
-                            StudentProfileId = 50
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -2890,32 +1643,40 @@ namespace Global_College.mvc.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Global_College.domain.Models.Administrator.Course", b =>
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.BranchCourse", b =>
                 {
                     b.HasOne("Global_College.domain.Models.Administrator.Branch", "Branch")
-                        .WithMany("Courses")
+                        .WithMany("BranchCourses")
                         .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
+                        .WithMany("BranchCourses")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");
+
+                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Administrator.CourseEnrolment", b =>
                 {
-                    b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Global_College.domain.Models.Administrator.BranchCourse", "BranchCourse")
+                        .WithMany("CourseEnrolments")
+                        .HasForeignKey("BranchCourseId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Global_College.domain.Models.Administrator.StudentProfile", "StudentProfile")
-                        .WithMany()
+                        .WithMany("CourseEnrolments")
                         .HasForeignKey("StudentProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("BranchCourse");
 
                     b.Navigation("StudentProfile");
                 });
@@ -2923,7 +1684,7 @@ namespace Global_College.mvc.Data.Migrations
             modelBuilder.Entity("Global_College.domain.Models.Administrator.FacultyCourseAssignment", b =>
                 {
                     b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
-                        .WithMany()
+                        .WithMany("FacultyCourseAssignments")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2942,7 +1703,7 @@ namespace Global_College.mvc.Data.Migrations
             modelBuilder.Entity("Global_College.domain.Models.Faculty.Assignment", b =>
                 {
                     b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
-                        .WithMany()
+                        .WithMany("Assignments")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2959,7 +1720,7 @@ namespace Global_College.mvc.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Global_College.domain.Models.Administrator.StudentProfile", "StudentProfile")
-                        .WithMany()
+                        .WithMany("AssignmentResults")
                         .HasForeignKey("StudentProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2983,7 +1744,7 @@ namespace Global_College.mvc.Data.Migrations
             modelBuilder.Entity("Global_College.domain.Models.Student.Exam", b =>
                 {
                     b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
-                        .WithMany()
+                        .WithMany("Exams")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3000,7 +1761,7 @@ namespace Global_College.mvc.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Global_College.domain.Models.Administrator.StudentProfile", "StudentProfile")
-                        .WithMany()
+                        .WithMany("ExamResults")
                         .HasForeignKey("StudentProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3063,12 +1824,37 @@ namespace Global_College.mvc.Data.Migrations
 
             modelBuilder.Entity("Global_College.domain.Models.Administrator.Branch", b =>
                 {
-                    b.Navigation("Courses");
+                    b.Navigation("BranchCourses");
+                });
+
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.BranchCourse", b =>
+                {
+                    b.Navigation("CourseEnrolments");
+                });
+
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.Course", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("BranchCourses");
+
+                    b.Navigation("Exams");
+
+                    b.Navigation("FacultyCourseAssignments");
                 });
 
             modelBuilder.Entity("Global_College.domain.Models.Administrator.FacultyProfile", b =>
                 {
                     b.Navigation("FacultyCourseAssignments");
+                });
+
+            modelBuilder.Entity("Global_College.domain.Models.Administrator.StudentProfile", b =>
+                {
+                    b.Navigation("AssignmentResults");
+
+                    b.Navigation("CourseEnrolments");
+
+                    b.Navigation("ExamResults");
                 });
 #pragma warning restore 612, 618
         }

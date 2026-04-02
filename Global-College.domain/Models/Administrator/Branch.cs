@@ -21,6 +21,6 @@ namespace Global_College.domain.Models.Administrator
         public string Address { get; set; } = string.Empty;
 
         // Navigation property to related courses. Allows access to the collection of Course entities associated with this Branch.
-        public ICollection<Course> Courses { get; set; } = new List<Course>(); 
+        public ICollection<BranchCourse> BranchCourses { get; set; } = new List<BranchCourse>();
     }
 }
