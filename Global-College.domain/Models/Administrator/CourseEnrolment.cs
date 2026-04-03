@@ -12,10 +12,10 @@ namespace Global_College.domain.Models.Administrator
         public string Status { get; set; } = string.Empty;
 
         public int BranchCourseId { get; set; }
-        public BranchCourse? BranchCourse { get; set; }
+        public BranchCourse? BranchCourse { get; set; } = null;
 
         public int StudentProfileId { get; set; }
-        public StudentProfile? StudentProfile { get; set; }
+        public StudentProfile? StudentProfile { get; set; } = null;
 
         public void Validate()
         {

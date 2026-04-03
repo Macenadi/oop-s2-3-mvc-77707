@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,16 @@ namespace Global_College.mvc.Controllers
         // GET: AttendanceRecords
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.AttendanceRecords.Include(a => a.CourseEnrolment);
+            var applicationDbContext = _context.AttendanceRecords
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.StudentProfile)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Course);
+
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -36,7 +44,15 @@ namespace Global_College.mvc.Controllers
 
             var attendanceRecord = await _context.AttendanceRecords
                 .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.StudentProfile)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (attendanceRecord == null)
             {
                 return NotFound();
@@ -48,13 +64,11 @@ namespace Global_College.mvc.Controllers
         // GET: AttendanceRecords/Create
         public IActionResult Create()
         {
-            ViewData["CourseEnrolmentId"] = new SelectList(_context.CourseEnrolments, "Id", "Status");
+            LoadDropDowns();
             return View();
         }
 
         // POST: AttendanceRecords/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,Present,CourseEnrolmentId")] AttendanceRecord attendanceRecord)
@@ -65,7 +79,8 @@ namespace Global_College.mvc.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseEnrolmentId"] = new SelectList(_context.CourseEnrolments, "Id", "Status", attendanceRecord.CourseEnrolmentId);
+
+            LoadDropDowns(attendanceRecord.CourseEnrolmentId);
             return View(attendanceRecord);
         }
 
@@ -82,13 +97,12 @@ namespace Global_College.mvc.Controllers
             {
                 return NotFound();
             }
-            ViewData["CourseEnrolmentId"] = new SelectList(_context.CourseEnrolments, "Id", "Status", attendanceRecord.CourseEnrolmentId);
+
+            LoadDropDowns(attendanceRecord.CourseEnrolmentId);
             return View(attendanceRecord);
         }
 
         // POST: AttendanceRecords/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Present,CourseEnrolmentId")] AttendanceRecord attendanceRecord)
@@ -111,14 +125,14 @@ namespace Global_College.mvc.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseEnrolmentId"] = new SelectList(_context.CourseEnrolments, "Id", "Status", attendanceRecord.CourseEnrolmentId);
+
+            LoadDropDowns(attendanceRecord.CourseEnrolmentId);
             return View(attendanceRecord);
         }
 
@@ -132,7 +146,15 @@ namespace Global_College.mvc.Controllers
 
             var attendanceRecord = await _context.AttendanceRecords
                 .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.StudentProfile)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
+                .Include(a => a.CourseEnrolment)
+                    .ThenInclude(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (attendanceRecord == null)
             {
                 return NotFound();
@@ -147,18 +169,39 @@ namespace Global_College.mvc.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var attendanceRecord = await _context.AttendanceRecords.FindAsync(id);
+
             if (attendanceRecord != null)
             {
                 _context.AttendanceRecords.Remove(attendanceRecord);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AttendanceRecordExists(int id)
         {
             return _context.AttendanceRecords.Any(e => e.Id == id);
+        }
+
+        private void LoadDropDowns(int? selectedCourseEnrolmentId = null)
+        {
+            var enrolments = _context.CourseEnrolments
+                .Include(ce => ce.StudentProfile)
+                .Include(ce => ce.BranchCourse)
+                    .ThenInclude(bc => bc.Branch)
+                .Include(ce => ce.BranchCourse)
+                    .ThenInclude(bc => bc.Course)
+                .Select(ce => new
+                {
+                    ce.Id,
+                    Display = ce.StudentProfile.FullName + " - " +
+                              ce.BranchCourse.Branch.Name + " - " +
+                              ce.BranchCourse.Course.Name
+                })
+                .ToList();
+
+            ViewData["CourseEnrolmentId"] = new SelectList(enrolments, "Id", "Display", selectedCourseEnrolmentId);
         }
     }
 }

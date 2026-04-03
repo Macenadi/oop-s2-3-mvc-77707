@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,11 @@ namespace Global_College.mvc.Controllers
         // GET: AssignmentResults
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.AssignmentResults.Include(a => a.Assignment).Include(a => a.StudentProfile);
+            var applicationDbContext = _context.AssignmentResults
+                .Include(a => a.Assignment)
+                    .ThenInclude(a => a.Course)
+                .Include(a => a.StudentProfile);
+
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -36,8 +39,10 @@ namespace Global_College.mvc.Controllers
 
             var assignmentResult = await _context.AssignmentResults
                 .Include(a => a.Assignment)
+                    .ThenInclude(a => a.Course)
                 .Include(a => a.StudentProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (assignmentResult == null)
             {
                 return NotFound();
@@ -49,26 +54,52 @@ namespace Global_College.mvc.Controllers
         // GET: AssignmentResults/Create
         public IActionResult Create()
         {
-            ViewData["AssignmentId"] = new SelectList(_context.Assignments, "Id", "Title");
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address");
+            LoadDropDowns();
             return View();
         }
 
         // POST: AssignmentResults/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Score,Feedback,StudentProfileId,AssignmentId")] AssignmentResult assignmentResult)
         {
+            var assignment = await _context.Assignments
+                .Include(a => a.Course)
+                .FirstOrDefaultAsync(a => a.Id == assignmentResult.AssignmentId);
+
+            if (assignment == null)
+            {
+                ModelState.AddModelError(nameof(assignmentResult.AssignmentId), "Invalid assignment.");
+            }
+            else
+            {
+                assignmentResult.Assignment = assignment;
+
+                try
+                {
+                    assignmentResult.Validate();
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(nameof(assignmentResult.Score), ex.Message);
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                _context.Add(assignmentResult);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(assignmentResult);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("", "This student already has a result for this assignment.");
+                }
             }
-            ViewData["AssignmentId"] = new SelectList(_context.Assignments, "Id", "Title", assignmentResult.AssignmentId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", assignmentResult.StudentProfileId);
+
+            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
@@ -85,14 +116,12 @@ namespace Global_College.mvc.Controllers
             {
                 return NotFound();
             }
-            ViewData["AssignmentId"] = new SelectList(_context.Assignments, "Id", "Title", assignmentResult.AssignmentId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", assignmentResult.StudentProfileId);
+
+            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
         // POST: AssignmentResults/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Score,Feedback,StudentProfileId,AssignmentId")] AssignmentResult assignmentResult)
@@ -102,12 +131,35 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
+            var assignment = await _context.Assignments
+                .Include(a => a.Course)
+                .FirstOrDefaultAsync(a => a.Id == assignmentResult.AssignmentId);
+
+            if (assignment == null)
+            {
+                ModelState.AddModelError(nameof(assignmentResult.AssignmentId), "Invalid assignment.");
+            }
+            else
+            {
+                assignmentResult.Assignment = assignment;
+
+                try
+                {
+                    assignmentResult.Validate();
+                }
+                catch (ArgumentException ex)
+                {
+                    ModelState.AddModelError(nameof(assignmentResult.Score), ex.Message);
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(assignmentResult);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -115,15 +167,16 @@ namespace Global_College.mvc.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("", "This student already has a result for this assignment.");
+                }
             }
-            ViewData["AssignmentId"] = new SelectList(_context.Assignments, "Id", "Title", assignmentResult.AssignmentId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", assignmentResult.StudentProfileId);
+
+            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
@@ -137,8 +190,10 @@ namespace Global_College.mvc.Controllers
 
             var assignmentResult = await _context.AssignmentResults
                 .Include(a => a.Assignment)
+                    .ThenInclude(a => a.Course)
                 .Include(a => a.StudentProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (assignmentResult == null)
             {
                 return NotFound();
@@ -153,18 +208,42 @@ namespace Global_College.mvc.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var assignmentResult = await _context.AssignmentResults.FindAsync(id);
+
             if (assignmentResult != null)
             {
                 _context.AssignmentResults.Remove(assignmentResult);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AssignmentResultExists(int id)
         {
             return _context.AssignmentResults.Any(e => e.Id == id);
+        }
+
+        private void LoadDropDowns(int? selectedAssignmentId = null, int? selectedStudentProfileId = null)
+        {
+            var assignments = _context.Assignments
+                .Include(a => a.Course)
+                .Select(a => new
+                {
+                    a.Id,
+                    Display = a.Title + " - " + a.Course.Name
+                })
+                .ToList();
+
+            var students = _context.StudentProfiles
+                .Select(sp => new
+                {
+                    sp.Id,
+                    sp.FullName
+                })
+                .ToList();
+
+            ViewData["AssignmentId"] = new SelectList(assignments, "Id", "Display", selectedAssignmentId);
+            ViewData["StudentProfileId"] = new SelectList(students, "Id", "FullName", selectedStudentProfileId);
         }
     }
 }

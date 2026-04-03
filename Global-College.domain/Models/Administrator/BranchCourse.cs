@@ -11,10 +11,10 @@ namespace Global_College.domain.Models.Administrator
         public int Id { get; set; }
 
         public int BranchId { get; set; }
-        public Branch? Branch { get; set; }
+        public Branch? Branch { get; set; } = null;
 
         public int CourseId { get; set; }
-        public Course? Course { get; set; }
+        public Course? Course { get; set; } = null;
 
         public ICollection<CourseEnrolment> CourseEnrolments { get; set; } = new List<CourseEnrolment>();
     }
