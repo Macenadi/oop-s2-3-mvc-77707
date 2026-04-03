@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,9 @@ namespace Global_College.mvc.Controllers
         // GET: Exams
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Exams.Include(e => e.Course);
+            var applicationDbContext = _context.Exams
+                .Include(e => e.Course);
+
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -37,6 +38,7 @@ namespace Global_College.mvc.Controllers
             var exam = await _context.Exams
                 .Include(e => e.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (exam == null)
             {
                 return NotFound();
@@ -48,13 +50,11 @@ namespace Global_College.mvc.Controllers
         // GET: Exams/Create
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name");
+            LoadDropDowns();
             return View();
         }
 
         // POST: Exams/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Date,MaxScore,ResultsReleased,CourseId")] Exam exam)
@@ -65,7 +65,8 @@ namespace Global_College.mvc.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", exam.CourseId);
+
+            LoadDropDowns(exam.CourseId);
             return View(exam);
         }
 
@@ -82,13 +83,12 @@ namespace Global_College.mvc.Controllers
             {
                 return NotFound();
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", exam.CourseId);
+
+            LoadDropDowns(exam.CourseId);
             return View(exam);
         }
 
         // POST: Exams/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Date,MaxScore,ResultsReleased,CourseId")] Exam exam)
@@ -104,6 +104,7 @@ namespace Global_College.mvc.Controllers
                 {
                     _context.Update(exam);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -111,14 +112,12 @@ namespace Global_College.mvc.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", exam.CourseId);
+
+            LoadDropDowns(exam.CourseId);
             return View(exam);
         }
 
@@ -133,6 +132,7 @@ namespace Global_College.mvc.Controllers
             var exam = await _context.Exams
                 .Include(e => e.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (exam == null)
             {
                 return NotFound();
@@ -147,18 +147,32 @@ namespace Global_College.mvc.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var exam = await _context.Exams.FindAsync(id);
+
             if (exam != null)
             {
-                _context.Exams.Remove(exam);
+                try
+                {
+                    _context.Exams.Remove(exam);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["ErrorMessage"] = "This exam cannot be deleted because it is linked to other records.";
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ExamExists(int id)
         {
             return _context.Exams.Any(e => e.Id == id);
+        }
+
+        private void LoadDropDowns(int? selectedCourseId = null)
+        {
+            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", selectedCourseId);
         }
     }
 }

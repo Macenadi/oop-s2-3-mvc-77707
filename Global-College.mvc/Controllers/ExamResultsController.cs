@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,11 @@ namespace Global_College.mvc.Controllers
         // GET: ExamResults
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.ExamResults.Include(e => e.Exam).Include(e => e.StudentProfile);
+            var applicationDbContext = _context.ExamResults
+                .Include(e => e.Exam)
+                    .ThenInclude(ex => ex.Course)
+                .Include(e => e.StudentProfile);
+
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -36,8 +39,10 @@ namespace Global_College.mvc.Controllers
 
             var examResult = await _context.ExamResults
                 .Include(e => e.Exam)
+                    .ThenInclude(ex => ex.Course)
                 .Include(e => e.StudentProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (examResult == null)
             {
                 return NotFound();
@@ -49,26 +54,30 @@ namespace Global_College.mvc.Controllers
         // GET: ExamResults/Create
         public IActionResult Create()
         {
-            ViewData["ExamId"] = new SelectList(_context.Exams, "Id", "Title");
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address");
+            LoadDropDowns();
             return View();
         }
 
         // POST: ExamResults/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Score,Grade,ExamId,StudentProfileId")] ExamResult examResult)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(examResult);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.Add(examResult);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("", "This student already has a result for this exam.");
+                }
             }
-            ViewData["ExamId"] = new SelectList(_context.Exams, "Id", "Title", examResult.ExamId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", examResult.StudentProfileId);
+
+            LoadDropDowns(examResult.ExamId, examResult.StudentProfileId);
             return View(examResult);
         }
 
@@ -85,14 +94,12 @@ namespace Global_College.mvc.Controllers
             {
                 return NotFound();
             }
-            ViewData["ExamId"] = new SelectList(_context.Exams, "Id", "Title", examResult.ExamId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", examResult.StudentProfileId);
+
+            LoadDropDowns(examResult.ExamId, examResult.StudentProfileId);
             return View(examResult);
         }
 
         // POST: ExamResults/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Score,Grade,ExamId,StudentProfileId")] ExamResult examResult)
@@ -108,6 +115,7 @@ namespace Global_College.mvc.Controllers
                 {
                     _context.Update(examResult);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -115,15 +123,16 @@ namespace Global_College.mvc.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("", "This student already has a result for this exam.");
+                }
             }
-            ViewData["ExamId"] = new SelectList(_context.Exams, "Id", "Title", examResult.ExamId);
-            ViewData["StudentProfileId"] = new SelectList(_context.StudentProfiles, "Id", "Address", examResult.StudentProfileId);
+
+            LoadDropDowns(examResult.ExamId, examResult.StudentProfileId);
             return View(examResult);
         }
 
@@ -137,8 +146,10 @@ namespace Global_College.mvc.Controllers
 
             var examResult = await _context.ExamResults
                 .Include(e => e.Exam)
+                    .ThenInclude(ex => ex.Course)
                 .Include(e => e.StudentProfile)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (examResult == null)
             {
                 return NotFound();
@@ -153,18 +164,42 @@ namespace Global_College.mvc.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var examResult = await _context.ExamResults.FindAsync(id);
+
             if (examResult != null)
             {
                 _context.ExamResults.Remove(examResult);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ExamResultExists(int id)
         {
             return _context.ExamResults.Any(e => e.Id == id);
+        }
+
+        private void LoadDropDowns(int? selectedExamId = null, int? selectedStudentProfileId = null)
+        {
+            var exams = _context.Exams
+                .Include(e => e.Course)
+                .Select(e => new
+                {
+                    e.Id,
+                    Display = e.Title + " - " + e.Course.Name
+                })
+                .ToList();
+
+            var students = _context.StudentProfiles
+                .Select(sp => new
+                {
+                    sp.Id,
+                    sp.FullName
+                })
+                .ToList();
+
+            ViewData["ExamId"] = new SelectList(exams, "Id", "Display", selectedExamId);
+            ViewData["StudentProfileId"] = new SelectList(students, "Id", "FullName", selectedStudentProfileId);
         }
     }
 }
