@@ -30,11 +30,13 @@ namespace Global_College.domain.Models.Administrator
 
 
         // Validates that EndDate is not earlier than StartDate
-        public void Validate() 
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (EndDate < StartDate)
             {
-                throw new ArgumentException("End date cannot be earlier than start date.");
+                yield return new ValidationResult(
+                    "End date cannot be earlier than start date.",
+                    new[] { nameof(EndDate) });
             }
         }
     }

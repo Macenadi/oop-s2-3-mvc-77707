@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Global_College.domain.Models.Faculty;
 using Global_College.mvc.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Global_College.mvc.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class AssignmentResultsController : Controller
     {
         private readonly ApplicationDbContext _context;

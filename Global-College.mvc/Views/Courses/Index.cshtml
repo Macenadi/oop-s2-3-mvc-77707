@@ -1,5 +1,19 @@
 ﻿@model IEnumerable<Global_College.domain.Models.Administrator.Course>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 @{
     ViewData["Title"] = "Index";
 }

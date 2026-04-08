@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Global_College.mvc.Controllers
 {
-    [Authorize(Roles = "Student")]
+ 
+    [Authorize(Roles = "Administrator")]
     public class StudentPortalController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -1,14 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Global_College.domain.Models.Faculty;
+using Global_College.mvc.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Global_College.domain.Models.Faculty;
-using Global_College.mvc.Data;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Global_College.mvc.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class AssignmentsController : Controller
     {
         private readonly ApplicationDbContext _context;

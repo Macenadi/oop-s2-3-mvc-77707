@@ -1,9 +1,11 @@
 using Global_College.mvc.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Global_College.mvc.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
