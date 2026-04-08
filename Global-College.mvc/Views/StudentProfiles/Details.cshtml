@@ -10,6 +10,15 @@
     <h4>Student Profile</h4>
     <hr />
     <dl class="row">
+
+        <dt class="col-sm-2">Personal Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">System Email</dt>
+        <dd class="col-sm-10">@Model.SystemEmail</dd>
+
+        <dt class="col-sm-2">System Password</dt>
+        <dd class="col-sm-10">@Model.SystemPassword</dd>
         <dt class="col-sm-2">Full Name</dt>
         <dd class="col-sm-10">@Model.FullName</dd>
 
@@ -36,38 +45,87 @@
 
     @if (Model.CourseEnrolments != null && Model.CourseEnrolments.Any())
     {
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Branch</th>
-                    <th>Course</th>
-                    <th>Enrol Date</th>
-                    <th>Status</th>
-                    <th>Justification</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var enrolment in Model.CourseEnrolments)
+        foreach (var enrolment in Model.CourseEnrolments.OrderByDescending(e => e.EnrolDate))
+        {
+            <div class="mb-4">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Course</th>
+                            <th>Course Start</th>
+                            <th>Course End</th>
+                            <th>Enrol Date</th>
+                            <th>Status</th>
+                            <th>Stopped Date</th>
+                            <th>Last Changed At</th>
+                            <th>Last Change Justification</th>
+                            <th>Initial Justification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@enrolment.BranchCourse?.Branch?.Name</td>
+                            <td>@enrolment.BranchCourse?.Course?.Name</td>
+                            <td>@enrolment.BranchCourse?.Course?.StartDate</td>
+                            <td>@enrolment.BranchCourse?.Course?.EndDate</td>
+                            <td>@enrolment.EnrolDate</td>
+                            <td>@enrolment.Status</td>
+                            <td>
+                                @if (string.Equals(enrolment.Status, "Enrolled", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span>-</span>
+                                }
+                                else if (enrolment.StoppedDate.HasValue)
+                                {
+                                    @enrolment.StoppedDate
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                            <td>@(enrolment.LastChangedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                            <td>@(!string.IsNullOrWhiteSpace(enrolment.LastChangeJustification) ? enrolment.LastChangeJustification : "No justification")</td>
+                            <td>@(!string.IsNullOrWhiteSpace(enrolment.Justification) ? enrolment.Justification : "No justification")</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h5>Change History</h5>
+
+                @if (enrolment.ChangeHistories != null && enrolment.ChangeHistories.Any())
                 {
-                    <tr>
-                        <td>@enrolment.BranchCourse?.Branch?.Name</td>
-                        <td>@enrolment.BranchCourse?.Course?.Name</td>
-                        <td>@enrolment.EnrolDate</td>
-                        <td>@enrolment.Status</td>
-                        <td>
-                            @if (!string.IsNullOrWhiteSpace(enrolment.Justification))
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Change Type</th>
+                                <th>Old Value</th>
+                                <th>New Value</th>
+                                <th>Justification</th>
+                                <th>Changed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var history in enrolment.ChangeHistories.OrderByDescending(h => h.ChangedAt))
                             {
-                                @enrolment.Justification
+                                <tr>
+                                    <td>@history.ChangeType</td>
+                                    <td>@history.OldValue</td>
+                                    <td>@history.NewValue</td>
+                                    <td>@history.Justification</td>
+                                    <td>@history.ChangedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
                             }
-                            else
-                            {
-                                <span>No justification</span>
-                            }
-                        </td>
-                    </tr>
+                        </tbody>
+                    </table>
                 }
-            </tbody>
-        </table>
+                else
+                {
+                    <p>No change history for this enrolment.</p>
+                }
+            </div>
+        }
     }
     else
     {

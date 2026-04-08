@@ -22,6 +22,7 @@ namespace Global_College.mvc.Data
         public DbSet<Course> Courses { get; set; }
         public DbSet<BranchCourse> BranchCourses { get; set; }
         public DbSet<CourseEnrolment> CourseEnrolments { get; set; }
+        public DbSet<CourseEnrolmentChangeHistory> CourseEnrolmentChangeHistories { get; set; } // NOVO
         public DbSet<FacultyCourseAssignment> FacultyCourseAssignments { get; set; }
         public DbSet<FacultyProfile> FacultyProfiles { get; set; }
         public DbSet<StudentProfile> StudentProfiles { get; set; }
@@ -80,6 +81,13 @@ namespace Global_College.mvc.Data
             builder.Entity<CourseEnrolment>()
                 .HasIndex(ce => new { ce.StudentProfileId, ce.BranchCourseId })
                 .IsUnique();
+
+            // NOVO: CourseEnrolmentChangeHistory -> CourseEnrolment
+            builder.Entity<CourseEnrolmentChangeHistory>()
+                .HasOne(h => h.CourseEnrolment)
+                .WithMany(e => e.ChangeHistories)
+                .HasForeignKey(h => h.CourseEnrolmentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // =========================
             // SEED DATA

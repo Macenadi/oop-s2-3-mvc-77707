@@ -1,14 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Global_College.domain.Models.Administrator;
+using Global_College.mvc.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Global_College.domain.Models.Administrator;
-using Global_College.mvc.Data;
 
 namespace Global_College.mvc.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     public class CourseEnrolmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,9 +23,9 @@ namespace Global_College.mvc.Controllers
             var applicationDbContext = _context.CourseEnrolments
                 .Include(c => c.StudentProfile)
                 .Include(c => c.BranchCourse)
-                .ThenInclude(bc => bc.Branch)
+                    .ThenInclude(bc => bc.Branch)
                 .Include(c => c.BranchCourse)
-                .ThenInclude(bc => bc.Course);
+                    .ThenInclude(bc => bc.Course);
 
             return View(await applicationDbContext.ToListAsync());
         }
@@ -42,9 +41,9 @@ namespace Global_College.mvc.Controllers
             var courseEnrolment = await _context.CourseEnrolments
                 .Include(c => c.StudentProfile)
                 .Include(c => c.BranchCourse)
-                .ThenInclude(bc => bc.Branch!)
+                    .ThenInclude(bc => bc.Branch)
                 .Include(c => c.BranchCourse)
-                .ThenInclude(bc => bc.Course!)
+                    .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (courseEnrolment == null)
@@ -65,8 +64,17 @@ namespace Global_College.mvc.Controllers
         // POST: CourseEnrolments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,EnrolDate,Status,BranchCourseId,StudentProfileId")] CourseEnrolment courseEnrolment)
+        public async Task<IActionResult> Create([Bind("Id,EnrolDate,Status,Justification,StoppedDate,BranchCourseId,StudentProfileId")] CourseEnrolment courseEnrolment)
         {
+            if (courseEnrolment.Status == "Active")
+            {
+                courseEnrolment.StoppedDate = null;
+            }
+            else if (!courseEnrolment.StoppedDate.HasValue)
+            {
+                courseEnrolment.StoppedDate = DateOnly.FromDateTime(DateTime.Today);
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -106,11 +114,20 @@ namespace Global_College.mvc.Controllers
         // POST: CourseEnrolments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,EnrolDate,Status,BranchCourseId,StudentProfileId")] CourseEnrolment courseEnrolment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,EnrolDate,Status,Justification,StoppedDate,BranchCourseId,StudentProfileId")] CourseEnrolment courseEnrolment)
         {
             if (id != courseEnrolment.Id)
             {
                 return NotFound();
+            }
+
+            if (courseEnrolment.Status == "Active")
+            {
+                courseEnrolment.StoppedDate = null;
+            }
+            else if (!courseEnrolment.StoppedDate.HasValue)
+            {
+                courseEnrolment.StoppedDate = DateOnly.FromDateTime(DateTime.Today);
             }
 
             if (ModelState.IsValid)

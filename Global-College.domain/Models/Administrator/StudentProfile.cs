@@ -15,6 +15,7 @@ namespace Global_College.domain.Models.Administrator
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
 
+        // EMAIL PESSOAL
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
@@ -29,6 +30,12 @@ namespace Global_College.domain.Models.Administrator
         [Required]
         [StringLength(5)]
         public string StudentNumber { get; set; } = string.Empty;
+
+        // 🔥 NOVO: EMAIL DO SISTEMA
+        public string SystemEmail { get; set; } = string.Empty;
+
+        // 🔥 NOVO: SENHA DO SISTEMA
+        public string SystemPassword { get; set; } = string.Empty;
 
         public ICollection<CourseEnrolment> CourseEnrolments { get; set; } = new List<CourseEnrolment>();
         public ICollection<AssignmentResult> AssignmentResults { get; set; } = new List<AssignmentResult>();

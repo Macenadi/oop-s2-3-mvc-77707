@@ -4,6 +4,7 @@ using Global_College.mvc.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Global_College.mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408211023_AddCourseEnrolmentChangeHistoryAndStoppedDate")]
+    partial class AddCourseEnrolmentChangeHistoryAndStoppedDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -842,14 +845,6 @@ namespace Global_College.mvc.Migrations
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
 
-                    b.Property<string>("SystemEmail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SystemPassword")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("StudentProfiles");
@@ -863,9 +858,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 1",
                             IdentityUserId = "student-user-1",
                             Phone = "0000001",
-                            StudentNumber = "S0001",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0001"
                         },
                         new
                         {
@@ -875,9 +868,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 2",
                             IdentityUserId = "student-user-2",
                             Phone = "0000002",
-                            StudentNumber = "S0002",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0002"
                         },
                         new
                         {
@@ -887,9 +878,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 3",
                             IdentityUserId = "student-user-3",
                             Phone = "0000003",
-                            StudentNumber = "S0003",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0003"
                         },
                         new
                         {
@@ -899,9 +888,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 4",
                             IdentityUserId = "student-user-4",
                             Phone = "0000004",
-                            StudentNumber = "S0004",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0004"
                         },
                         new
                         {
@@ -911,9 +898,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 5",
                             IdentityUserId = "student-user-5",
                             Phone = "0000005",
-                            StudentNumber = "S0005",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0005"
                         },
                         new
                         {
@@ -923,9 +908,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 6",
                             IdentityUserId = "student-user-6",
                             Phone = "0000006",
-                            StudentNumber = "S0006",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0006"
                         },
                         new
                         {
@@ -935,9 +918,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 7",
                             IdentityUserId = "student-user-7",
                             Phone = "0000007",
-                            StudentNumber = "S0007",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0007"
                         },
                         new
                         {
@@ -947,9 +928,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 8",
                             IdentityUserId = "student-user-8",
                             Phone = "0000008",
-                            StudentNumber = "S0008",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0008"
                         },
                         new
                         {
@@ -959,9 +938,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 9",
                             IdentityUserId = "student-user-9",
                             Phone = "0000009",
-                            StudentNumber = "S0009",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0009"
                         },
                         new
                         {
@@ -971,9 +948,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 10",
                             IdentityUserId = "student-user-10",
                             Phone = "00000010",
-                            StudentNumber = "S0010",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0010"
                         },
                         new
                         {
@@ -983,9 +958,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 11",
                             IdentityUserId = "student-user-11",
                             Phone = "00000011",
-                            StudentNumber = "S0011",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0011"
                         },
                         new
                         {
@@ -995,9 +968,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 12",
                             IdentityUserId = "student-user-12",
                             Phone = "00000012",
-                            StudentNumber = "S0012",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0012"
                         },
                         new
                         {
@@ -1007,9 +978,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 13",
                             IdentityUserId = "student-user-13",
                             Phone = "00000013",
-                            StudentNumber = "S0013",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0013"
                         },
                         new
                         {
@@ -1019,9 +988,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 14",
                             IdentityUserId = "student-user-14",
                             Phone = "00000014",
-                            StudentNumber = "S0014",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0014"
                         },
                         new
                         {
@@ -1031,9 +998,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 15",
                             IdentityUserId = "student-user-15",
                             Phone = "00000015",
-                            StudentNumber = "S0015",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0015"
                         },
                         new
                         {
@@ -1043,9 +1008,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 16",
                             IdentityUserId = "student-user-16",
                             Phone = "00000016",
-                            StudentNumber = "S0016",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0016"
                         },
                         new
                         {
@@ -1055,9 +1018,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 17",
                             IdentityUserId = "student-user-17",
                             Phone = "00000017",
-                            StudentNumber = "S0017",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0017"
                         },
                         new
                         {
@@ -1067,9 +1028,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 18",
                             IdentityUserId = "student-user-18",
                             Phone = "00000018",
-                            StudentNumber = "S0018",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0018"
                         },
                         new
                         {
@@ -1079,9 +1038,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 19",
                             IdentityUserId = "student-user-19",
                             Phone = "00000019",
-                            StudentNumber = "S0019",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0019"
                         },
                         new
                         {
@@ -1091,9 +1048,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 20",
                             IdentityUserId = "student-user-20",
                             Phone = "00000020",
-                            StudentNumber = "S0020",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0020"
                         },
                         new
                         {
@@ -1103,9 +1058,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 21",
                             IdentityUserId = "student-user-21",
                             Phone = "00000021",
-                            StudentNumber = "S0021",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0021"
                         },
                         new
                         {
@@ -1115,9 +1068,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 22",
                             IdentityUserId = "student-user-22",
                             Phone = "00000022",
-                            StudentNumber = "S0022",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0022"
                         },
                         new
                         {
@@ -1127,9 +1078,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 23",
                             IdentityUserId = "student-user-23",
                             Phone = "00000023",
-                            StudentNumber = "S0023",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0023"
                         },
                         new
                         {
@@ -1139,9 +1088,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 24",
                             IdentityUserId = "student-user-24",
                             Phone = "00000024",
-                            StudentNumber = "S0024",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0024"
                         },
                         new
                         {
@@ -1151,9 +1098,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 25",
                             IdentityUserId = "student-user-25",
                             Phone = "00000025",
-                            StudentNumber = "S0025",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0025"
                         },
                         new
                         {
@@ -1163,9 +1108,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 26",
                             IdentityUserId = "student-user-26",
                             Phone = "00000026",
-                            StudentNumber = "S0026",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0026"
                         },
                         new
                         {
@@ -1175,9 +1118,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 27",
                             IdentityUserId = "student-user-27",
                             Phone = "00000027",
-                            StudentNumber = "S0027",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0027"
                         },
                         new
                         {
@@ -1187,9 +1128,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 28",
                             IdentityUserId = "student-user-28",
                             Phone = "00000028",
-                            StudentNumber = "S0028",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0028"
                         },
                         new
                         {
@@ -1199,9 +1138,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 29",
                             IdentityUserId = "student-user-29",
                             Phone = "00000029",
-                            StudentNumber = "S0029",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0029"
                         },
                         new
                         {
@@ -1211,9 +1148,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 30",
                             IdentityUserId = "student-user-30",
                             Phone = "00000030",
-                            StudentNumber = "S0030",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0030"
                         },
                         new
                         {
@@ -1223,9 +1158,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 31",
                             IdentityUserId = "student-user-31",
                             Phone = "00000031",
-                            StudentNumber = "S0031",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0031"
                         },
                         new
                         {
@@ -1235,9 +1168,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 32",
                             IdentityUserId = "student-user-32",
                             Phone = "00000032",
-                            StudentNumber = "S0032",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0032"
                         },
                         new
                         {
@@ -1247,9 +1178,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 33",
                             IdentityUserId = "student-user-33",
                             Phone = "00000033",
-                            StudentNumber = "S0033",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0033"
                         },
                         new
                         {
@@ -1259,9 +1188,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 34",
                             IdentityUserId = "student-user-34",
                             Phone = "00000034",
-                            StudentNumber = "S0034",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0034"
                         },
                         new
                         {
@@ -1271,9 +1198,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 35",
                             IdentityUserId = "student-user-35",
                             Phone = "00000035",
-                            StudentNumber = "S0035",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0035"
                         },
                         new
                         {
@@ -1283,9 +1208,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 36",
                             IdentityUserId = "student-user-36",
                             Phone = "00000036",
-                            StudentNumber = "S0036",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0036"
                         },
                         new
                         {
@@ -1295,9 +1218,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 37",
                             IdentityUserId = "student-user-37",
                             Phone = "00000037",
-                            StudentNumber = "S0037",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0037"
                         },
                         new
                         {
@@ -1307,9 +1228,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 38",
                             IdentityUserId = "student-user-38",
                             Phone = "00000038",
-                            StudentNumber = "S0038",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0038"
                         },
                         new
                         {
@@ -1319,9 +1238,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 39",
                             IdentityUserId = "student-user-39",
                             Phone = "00000039",
-                            StudentNumber = "S0039",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0039"
                         },
                         new
                         {
@@ -1331,9 +1248,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 40",
                             IdentityUserId = "student-user-40",
                             Phone = "00000040",
-                            StudentNumber = "S0040",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0040"
                         },
                         new
                         {
@@ -1343,9 +1258,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 41",
                             IdentityUserId = "student-user-41",
                             Phone = "00000041",
-                            StudentNumber = "S0041",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0041"
                         },
                         new
                         {
@@ -1355,9 +1268,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 42",
                             IdentityUserId = "student-user-42",
                             Phone = "00000042",
-                            StudentNumber = "S0042",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0042"
                         },
                         new
                         {
@@ -1367,9 +1278,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 43",
                             IdentityUserId = "student-user-43",
                             Phone = "00000043",
-                            StudentNumber = "S0043",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0043"
                         },
                         new
                         {
@@ -1379,9 +1288,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 44",
                             IdentityUserId = "student-user-44",
                             Phone = "00000044",
-                            StudentNumber = "S0044",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0044"
                         },
                         new
                         {
@@ -1391,9 +1298,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 45",
                             IdentityUserId = "student-user-45",
                             Phone = "00000045",
-                            StudentNumber = "S0045",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0045"
                         },
                         new
                         {
@@ -1403,9 +1308,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 46",
                             IdentityUserId = "student-user-46",
                             Phone = "00000046",
-                            StudentNumber = "S0046",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0046"
                         },
                         new
                         {
@@ -1415,9 +1318,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 47",
                             IdentityUserId = "student-user-47",
                             Phone = "00000047",
-                            StudentNumber = "S0047",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0047"
                         },
                         new
                         {
@@ -1427,9 +1328,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 48",
                             IdentityUserId = "student-user-48",
                             Phone = "00000048",
-                            StudentNumber = "S0048",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0048"
                         },
                         new
                         {
@@ -1439,9 +1338,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 49",
                             IdentityUserId = "student-user-49",
                             Phone = "00000049",
-                            StudentNumber = "S0049",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0049"
                         },
                         new
                         {
@@ -1451,9 +1348,7 @@ namespace Global_College.mvc.Migrations
                             FullName = "Student 50",
                             IdentityUserId = "student-user-50",
                             Phone = "00000050",
-                            StudentNumber = "S0050",
-                            SystemEmail = "",
-                            SystemPassword = ""
+                            StudentNumber = "S0050"
                         });
                 });
 
