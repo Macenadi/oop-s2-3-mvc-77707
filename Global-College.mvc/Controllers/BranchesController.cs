@@ -1,13 +1,10 @@
 ﻿using Global_College.domain.Models.Administrator;
 using Global_College.mvc.Data;
+using Global_College.mvc.Models.ViewModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Global_College.mvc.Controllers
 {
@@ -15,10 +12,12 @@ namespace Global_College.mvc.Controllers
     public class BranchesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public BranchesController(ApplicationDbContext context)
+        public BranchesController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Branches
@@ -36,7 +35,10 @@ namespace Global_College.mvc.Controllers
             }
 
             var branch = await _context.Branches
+                .Include(b => b.BranchCourses)
+                    .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (branch == null)
             {
                 return NotFound();
@@ -52,8 +54,6 @@ namespace Global_College.mvc.Controllers
         }
 
         // POST: Branches/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Address")] Branch branch)
@@ -62,8 +62,10 @@ namespace Global_College.mvc.Controllers
             {
                 _context.Add(branch);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Branch created successfully.";
                 return RedirectToAction(nameof(Index));
             }
+
             return View(branch);
         }
 
@@ -75,47 +77,89 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
-            var branch = await _context.Branches.FindAsync(id);
+            var branch = await _context.Branches
+                .Include(b => b.BranchCourses)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
             if (branch == null)
             {
                 return NotFound();
             }
-            return View(branch);
+
+            var viewModel = new BranchEditViewModel
+            {
+                Id = branch.Id,
+                Name = branch.Name,
+                Address = branch.Address,
+                RequiresAdminPasswordConfirmation = branch.BranchCourses.Any()
+            };
+
+            return View(viewModel);
         }
 
         // POST: Branches/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address")] Branch branch)
+        public async Task<IActionResult> Edit(int id, BranchEditViewModel model)
         {
-            if (id != branch.Id)
+            if (id != model.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var branch = await _context.Branches
+                .Include(b => b.BranchCourses)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (branch == null)
             {
-                try
+                return NotFound();
+            }
+
+            var requiresPasswordConfirmation = branch.BranchCourses.Any();
+            model.RequiresAdminPasswordConfirmation = requiresPasswordConfirmation;
+
+            if (requiresPasswordConfirmation)
+            {
+                if (string.IsNullOrWhiteSpace(model.AdminPassword))
                 {
-                    _context.Update(branch);
-                    await _context.SaveChangesAsync();
+                    ModelState.AddModelError("AdminPassword", "Admin password is required because this branch is already linked to one or more branch courses.");
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!BranchExists(branch.Id))
+                    var currentUser = await _userManager.GetUserAsync(User);
+
+                    if (currentUser == null || !await _userManager.CheckPasswordAsync(currentUser, model.AdminPassword))
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ModelState.AddModelError("AdminPassword", "Invalid admin password.");
                     }
                 }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            branch.Name = model.Name;
+            branch.Address = model.Address;
+
+            try
+            {
+                _context.Update(branch);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Branch updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            return View(branch);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BranchExists(model.Id))
+                {
+                    return NotFound();
+                }
+
+                throw;
+            }
         }
 
         // GET: Branches/Delete/5
@@ -127,11 +171,15 @@ namespace Global_College.mvc.Controllers
             }
 
             var branch = await _context.Branches
+                .Include(b => b.BranchCourses)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (branch == null)
             {
                 return NotFound();
             }
+
+            ViewBag.CanDelete = !branch.BranchCourses.Any();
 
             return View(branch);
         }
@@ -141,13 +189,32 @@ namespace Global_College.mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var branch = await _context.Branches.FindAsync(id);
-            if (branch != null)
+            var branch = await _context.Branches
+                .Include(b => b.BranchCourses)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (branch == null)
             {
-                _context.Branches.Remove(branch);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
+            if (branch.BranchCourses.Any())
+            {
+                TempData["ErrorMessage"] = "This branch cannot be deleted because it is linked to one or more branch courses.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                _context.Branches.Remove(branch);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Branch deleted successfully.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] = "This branch could not be deleted because it is linked to other records.";
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

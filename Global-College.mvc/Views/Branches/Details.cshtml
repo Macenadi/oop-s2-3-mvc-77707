@@ -10,20 +10,46 @@
     <h4>Branch</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
+        <dt class="col-sm-2">Branch Name</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Model.Address</dd>
     </dl>
 </div>
+
+<div class="mt-4">
+    <h4>Courses Linked to this Address</h4>
+    <hr />
+
+    @if (Model.BranchCourses != null && Model.BranchCourses.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Course Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var branchCourse in Model.BranchCourses)
+                {
+                    <tr>
+                        <td>@branchCourse.Course?.Name</td>
+                        <td>@branchCourse.Course?.StartDate</td>
+                        <td>@branchCourse.Course?.EndDate</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No courses are linked to this address.</p>
+    }
+</div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
