@@ -11,6 +11,9 @@ namespace Global_College.domain.Models.Administrator
         [Required]
         public string Status { get; set; } = string.Empty;
 
+        [StringLength(500)]
+        public string? Justification { get; set; }
+
         public int BranchCourseId { get; set; }
         public BranchCourse? BranchCourse { get; set; } = null;
 

@@ -2,56 +2,55 @@
 
 @{
     ViewData["Title"] = "Delete";
+    bool canDelete = ViewBag.CanDelete != null && (bool)ViewBag.CanDelete;
 }
 
 <h1>Delete</h1>
 
 <h3>Are you sure you want to delete this?</h3>
+
 <div>
-    <h4>StudentProfile</h4>
+    <h4>Student Profile</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdentityUserId)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdentityUserId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StudentNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StudentNumber)
-        </dd>
+        <dt class="col-sm-2">Full Name</dt>
+        <dd class="col-sm-10">@Model.FullName</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Phone</dt>
+        <dd class="col-sm-10">@Model.Phone</dd>
+
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Model.Address</dd>
+
+        <dt class="col-sm-2">Student Number</dt>
+        <dd class="col-sm-10">@Model.StudentNumber</dd>
+
+        <dt class="col-sm-2">Identity User ID</dt>
+        <dd class="col-sm-10">@Model.IdentityUserId</dd>
     </dl>
-    
-    <form asp-action="Delete">
+
+    @if (!canDelete)
+    {
+        <div class="alert alert-warning">
+            This student profile cannot be deleted because it is linked to one or more course enrolments.
+        </div>
+    }
+
+    <form asp-action="Delete" method="post">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+
+        @if (canDelete)
+        {
+            <input type="submit" value="Delete" class="btn btn-danger" />
+        }
+        else
+        {
+            <input type="button" value="Delete" class="btn btn-danger" disabled />
+        }
+
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </form>
 </div>

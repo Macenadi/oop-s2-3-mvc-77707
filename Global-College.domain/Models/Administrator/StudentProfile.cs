@@ -1,11 +1,6 @@
 ﻿using Global_College.domain.Models.Faculty;
 using Global_College.domain.Models.Student;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Global_College.domain.Models.Administrator
 {
@@ -25,7 +20,7 @@ namespace Global_College.domain.Models.Administrator
         public string Email { get; set; } = string.Empty;
 
         [Phone]
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; } = string.Empty;
 
         [Required]
         [StringLength(150)]
@@ -33,13 +28,10 @@ namespace Global_College.domain.Models.Administrator
 
         [Required]
         [StringLength(5)]
-        public string StudentNumber { get; set; } = string.Empty; // Unique student number used to identify the student
-
+        public string StudentNumber { get; set; } = string.Empty;
 
         public ICollection<CourseEnrolment> CourseEnrolments { get; set; } = new List<CourseEnrolment>();
-
         public ICollection<AssignmentResult> AssignmentResults { get; set; } = new List<AssignmentResult>();
-
         public ICollection<ExamResult> ExamResults { get; set; } = new List<ExamResult>();
     }
 }

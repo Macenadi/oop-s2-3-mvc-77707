@@ -7,47 +7,74 @@
 <h1>Details</h1>
 
 <div>
-    <h4>StudentProfile</h4>
+    <h4>Student Profile</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdentityUserId)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdentityUserId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StudentNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StudentNumber)
-        </dd>
+        <dt class="col-sm-2">Full Name</dt>
+        <dd class="col-sm-10">@Model.FullName</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Phone</dt>
+        <dd class="col-sm-10">@Model.Phone</dd>
+
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Model.Address</dd>
+
+        <dt class="col-sm-2">Student Number</dt>
+        <dd class="col-sm-10">@Model.StudentNumber</dd>
+
+        <dt class="col-sm-2">Identity User ID</dt>
+        <dd class="col-sm-10">@Model.IdentityUserId</dd>
     </dl>
 </div>
+
+<div class="mt-4">
+    <h4>Course Enrolments</h4>
+    <hr />
+
+    @if (Model.CourseEnrolments != null && Model.CourseEnrolments.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Branch</th>
+                    <th>Course</th>
+                    <th>Enrol Date</th>
+                    <th>Status</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var enrolment in Model.CourseEnrolments)
+                {
+                    <tr>
+                        <td>@enrolment.BranchCourse?.Branch?.Name</td>
+                        <td>@enrolment.BranchCourse?.Course?.Name</td>
+                        <td>@enrolment.EnrolDate</td>
+                        <td>@enrolment.Status</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(enrolment.Justification))
+                            {
+                                @enrolment.Justification
+                            }
+                            else
+                            {
+                                <span>No justification</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No enrolments found for this student.</p>
+    }
+</div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

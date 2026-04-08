@@ -1,4 +1,4 @@
-﻿@model Global_College.domain.Models.Administrator.StudentProfile
+﻿@model Global_College.mvc.Models.ViewModel.StudentProfileCreateViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -6,53 +6,89 @@
 
 <h1>Create</h1>
 
-<h4>StudentProfile</h4>
+<h4>Student Profile</h4>
 <hr />
+
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="IdentityUserId" class="control-label"></label>
-                <input asp-for="IdentityUserId" class="form-control" />
-                <span asp-validation-for="IdentityUserId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="FullName" class="control-label"></label>
                 <input asp-for="FullName" class="form-control" />
                 <span asp-validation-for="FullName" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Phone" class="control-label"></label>
                 <input asp-for="Phone" class="form-control" />
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Address" class="control-label"></label>
                 <input asp-for="Address" class="form-control" />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="StudentNumber" class="control-label"></label>
-                <input asp-for="StudentNumber" class="form-control" />
-                <span asp-validation-for="StudentNumber" class="text-danger"></span>
+
+            <div class="form-group mb-3">
+                <label asp-for="BranchCourseId" class="control-label"></label>
+                <select asp-for="BranchCourseId" class="form-control" asp-items="ViewBag.BranchCourseId">
+                    <option value="">-- Select Branch Course --</option>
+                </select>
+                <span asp-validation-for="BranchCourseId" class="text-danger"></span>
             </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.SuggestedBranchCourseMessage))
+            {
+                <div class="alert alert-info">
+                    @Model.SuggestedBranchCourseMessage
+                </div>
+            }
+
+            @if (Model.RequiresOverrideApproval)
+            {
+                <div class="alert alert-warning">
+                    The selected course is outside the allowed enrolment period.
+                    Students may only be enrolled from the course start date up to 20 days after.
+                    To continue anyway, enter the admin password and provide a justification.
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="AdminPassword" class="control-label"></label>
+                    <input asp-for="AdminPassword" class="form-control" />
+                    <span asp-validation-for="AdminPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Justification" class="control-label"></label>
+                    <textarea asp-for="Justification" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Justification" class="text-danger"></span>
+                </div>
+            }
+
+            <div class="alert alert-info">
+                Student Number and Identity User ID will be generated automatically.
+                A Course Enrolment record will also be created automatically.
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
