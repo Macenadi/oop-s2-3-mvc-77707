@@ -2,15 +2,15 @@
 
 @{
     ViewData["Title"] = "Create Faculty";
-    var branchOptions = ViewBag.BranchOptions as List<SelectListItem>;
 }
 
-<h1>Create Faculty</h1>
+<h1>Create</h1>
+<h4>Faculty Profile</h4>
 <hr />
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Create">
+        <form asp-action="Create" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-group mb-3">
@@ -20,49 +20,68 @@
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="Email" class="control-label"></label>
+                <label asp-for="Email" class="control-label">Personal Email</label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="BranchId" class="control-label">Select Branch</label>
-                <select asp-for="BranchId" id="BranchId" asp-items="branchOptions" class="form-control">
-                    <option value="">-- Select Branch --</option>
-                </select>
+                <label asp-for="Phone" class="control-label">Phone</label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="SelectedBranchCourseIds" class="control-label">Available Courses</label>
-                <select asp-for="SelectedBranchCourseIds" id="SelectedBranchCourseIds" class="form-control" multiple size="8"></select>
+                <label asp-for="BranchId" class="control-label"></label>
+                <select asp-for="BranchId" class="form-control" asp-items="ViewBag.BranchOptions" id="BranchId">
+                    <option value="">-- Select Branch --</option>
+                </select>
+                <span asp-validation-for="BranchId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="SelectedBranchCourseIds" class="control-label">Courses</label>
+                <select asp-for="SelectedBranchCourseIds"
+                        class="form-control"
+                        asp-items="ViewBag.BranchCourseOptions"
+                        id="SelectedBranchCourseIds"
+                        multiple>
+                </select>
                 <span asp-validation-for="SelectedBranchCourseIds" class="text-danger"></span>
             </div>
 
-            <div class="form-group mt-4">
-                <button type="submit" class="btn btn-primary">Save Profile</button>
-                <a asp-action="Index" class="btn btn-secondary">Back</a>
+            <div class="form-group mt-3">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $("#BranchId").change(function () {
-                var branchId = $(this).val();
-                var courseSelect = $("#SelectedBranchCourseIds");
-                courseSelect.empty();
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
-                if (branchId) {
-                    $.getJSON('@Url.Action("GetCoursesByBranch")', { branchId: branchId }, function (data) {
-                        $.each(data, function (i, item) {
-                            courseSelect.append($('<option>', { value: item.id, text: item.name }));
+    <script>
+        document.getElementById("BranchId").addEventListener("change", function () {
+            var branchId = this.value;
+            var courseSelect = document.getElementById("SelectedBranchCourseIds");
+
+            courseSelect.innerHTML = "";
+
+            if (branchId) {
+                fetch('/FacultyProfiles/GetCoursesByBranch?branchId=' + branchId)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(course => {
+                            var option = document.createElement("option");
+                            option.value = course.id;
+                            option.text = course.name;
+                            courseSelect.appendChild(option);
                         });
                     });
-                }
-            });
+            }
         });
     </script>
 }

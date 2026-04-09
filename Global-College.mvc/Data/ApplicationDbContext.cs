@@ -160,13 +160,18 @@ namespace Global_College.mvc.Data
             var faculty = new List<FacultyProfile>();
             for (int i = 1; i <= 10; i++)
             {
+                string facultyNumber = i.ToString("D5");
+
                 faculty.Add(new FacultyProfile
                 {
                     Id = i,
-                    IdentityUserId = $"faculty-user-{i}",
+                    IdentityUserId = $"faculty{facultyNumber}",
                     FullName = $"Faculty {i}",
                     Email = $"faculty{i}@college.com",
-                    Phone = $"999999{i}"
+                    Phone = $"999999{i}",
+                    FacultyNumber = facultyNumber,
+                    SystemEmail = $"{facultyNumber}@college.com",
+                    SystemPassword = $"{facultyNumber}@college.com"
                 });
             }
             builder.Entity<FacultyProfile>().HasData(faculty);

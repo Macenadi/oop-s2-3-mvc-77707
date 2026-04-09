@@ -10,7 +10,7 @@ namespace Global_College.mvc.Models.ViewModel
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty; // personal email
+        public string Email { get; set; } = string.Empty;
 
         [Phone]
         public string? Phone { get; set; }

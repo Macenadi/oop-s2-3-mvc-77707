@@ -1,51 +1,88 @@
 ﻿@model Global_College.mvc.Models.ViewModel.FacultyProfileEditViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Faculty";
 }
 
-<h1>Edit Faculty</h1>
+<h1>Edit</h1>
+<h4>Faculty Profile</h4>
+<hr />
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="form-group">
-        <label asp-for="FullName"></label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+            <div class="form-group mb-3">
+                <label asp-for="FullName" class="control-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="control-label">Personal Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Phone" class="control-label">Phone</label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="BranchId" class="control-label"></label>
+                <select asp-for="BranchId" asp-items="Model.BranchOptions" class="form-control" id="BranchId">
+                    <option value="">-- Select Branch --</option>
+                </select>
+                <span asp-validation-for="BranchId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="SelectedBranchCourseIds" class="control-label">Courses</label>
+                <select asp-for="SelectedBranchCourseIds"
+                        asp-items="Model.BranchCourseOptions"
+                        class="form-control"
+                        id="SelectedBranchCourseIds"
+                        multiple>
+                </select>
+                <span asp-validation-for="SelectedBranchCourseIds" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-3">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Phone"></label>
-        <input asp-for="Phone" class="form-control" />
-        <span asp-validation-for="Phone" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="BranchId"></label>
-        <select asp-for="BranchId" asp-items="Model.BranchOptions" class="form-control" id="BranchId"></select>
-        <span asp-validation-for="BranchId" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label>Courses</label>
-        <select asp-for="SelectedBranchCourseIds" asp-items="Model.BranchCourseOptions" class="form-control" multiple></select>
-        <span asp-validation-for="SelectedBranchCourseIds" class="text-danger"></span>
-    </div>
-
-    <br />
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-action="Index" class="btn btn-secondary">Back</a>
-</form>
+</div>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.getElementById("BranchId").addEventListener("change", function () {
+            var branchId = this.value;
+            var courseSelect = document.getElementById("SelectedBranchCourseIds");
+
+            courseSelect.innerHTML = "";
+
+            if (branchId) {
+                fetch('/FacultyProfiles/GetCoursesByBranch?branchId=' + branchId)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(course => {
+                            var option = document.createElement("option");
+                            option.value = course.id;
+                            option.text = course.name;
+                            courseSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    </script>
 }

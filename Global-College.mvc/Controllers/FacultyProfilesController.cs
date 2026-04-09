@@ -18,9 +18,7 @@ namespace Global_College.mvc.Controllers
             _context = context;
         }
 
-        // =========================
         // INDEX
-        // =========================
         public async Task<IActionResult> Index()
         {
             var facultyProfiles = await _context.FacultyProfiles
@@ -32,9 +30,7 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfiles);
         }
 
-        // =========================
         // DETAILS
-        // =========================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -52,9 +48,7 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfile);
         }
 
-        // =========================
         // CREATE - GET
-        // =========================
         public async Task<IActionResult> Create()
         {
             var model = new FacultyProfileCreateViewModel();
@@ -72,9 +66,7 @@ namespace Global_College.mvc.Controllers
             return View(model);
         }
 
-        // =========================
-        // CREATE - AJAX
-        // =========================
+        // AJAX - load courses by selected branch
         [HttpGet]
         public async Task<JsonResult> GetCoursesByBranch(int branchId)
         {
@@ -91,71 +83,48 @@ namespace Global_College.mvc.Controllers
             return Json(courses);
         }
 
-        // =========================
         // CREATE - POST
-        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FacultyProfileCreateViewModel model)
         {
+            await LoadCreateViewData(model.BranchId);
+
+            ValidateSelectedCourses(model.BranchId, model.SelectedBranchCourseIds);
+
             if (!ModelState.IsValid)
-            {
-                ViewBag.BranchOptions = await _context.Branches
-                    .Select(b => new SelectListItem
-                    {
-                        Value = b.Id.ToString(),
-                        Text = b.Name
-                    })
-                    .ToListAsync();
-
-                ViewBag.BranchCourseOptions = await _context.BranchCourses
-                    .Include(bc => bc.Course)
-                    .Where(bc => bc.BranchId == model.BranchId)
-                    .Select(bc => new SelectListItem
-                    {
-                        Value = bc.Id.ToString(),
-                        Text = bc.Course.Name
-                    })
-                    .ToListAsync();
-
                 return View(model);
-            }
 
-            string facultyNumber = new Random().Next(10000, 99999).ToString();
+            string facultyNumber = await GenerateUniqueFacultyNumberAsync();
 
             var faculty = new FacultyProfile
             {
                 FullName = model.FullName,
                 Email = model.Email,
                 Phone = model.Phone ?? "",
+                FacultyNumber = facultyNumber,
                 IdentityUserId = "faculty" + facultyNumber,
                 SystemEmail = $"{facultyNumber}@college.com",
-                SystemPassword = "TempPassword123!"
+                SystemPassword = $"{facultyNumber}@college.com"
             };
 
             _context.FacultyProfiles.Add(faculty);
             await _context.SaveChangesAsync();
 
-            if (model.SelectedBranchCourseIds != null && model.SelectedBranchCourseIds.Any())
+            foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
             {
-                foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
+                _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
                 {
-                    _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
-                    {
-                        FacultyProfileId = faculty.Id,
-                        BranchCourseId = branchCourseId
-                    });
-                }
-
-                await _context.SaveChangesAsync();
+                    FacultyProfileId = faculty.Id,
+                    BranchCourseId = branchCourseId
+                });
             }
 
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // =========================
         // EDIT - GET
-        // =========================
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -170,14 +139,16 @@ namespace Global_College.mvc.Controllers
 
             int selectedBranchId = 0;
 
-            var firstAssignment = faculty.FacultyCourseAssignments.FirstOrDefault();
-            if (firstAssignment != null)
+            var selectedAssignments = faculty.FacultyCourseAssignments.ToList();
+            if (selectedAssignments.Any())
             {
-                var branchCourse = await _context.BranchCourses
-                    .FirstOrDefaultAsync(bc => bc.Id == firstAssignment.BranchCourseId);
+                var firstBranchCourseId = selectedAssignments.First().BranchCourseId;
 
-                if (branchCourse != null)
-                    selectedBranchId = branchCourse.BranchId;
+                var firstBranchCourse = await _context.BranchCourses
+                    .FirstOrDefaultAsync(bc => bc.Id == firstBranchCourseId);
+
+                if (firstBranchCourse != null)
+                    selectedBranchId = firstBranchCourse.BranchId;
             }
 
             var model = new FacultyProfileEditViewModel
@@ -190,7 +161,7 @@ namespace Global_College.mvc.Controllers
                 Email = faculty.Email,
                 Phone = faculty.Phone,
                 BranchId = selectedBranchId,
-                SelectedBranchCourseIds = faculty.FacultyCourseAssignments
+                SelectedBranchCourseIds = selectedAssignments
                     .Select(a => a.BranchCourseId)
                     .ToList()
             };
@@ -216,9 +187,7 @@ namespace Global_College.mvc.Controllers
             return View(model);
         }
 
-        // =========================
         // EDIT - POST
-        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, FacultyProfileEditViewModel model)
@@ -226,28 +195,28 @@ namespace Global_College.mvc.Controllers
             if (id != model.Id)
                 return NotFound();
 
+            model.BranchOptions = await _context.Branches
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name
+                })
+                .ToListAsync();
+
+            model.BranchCourseOptions = await _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == model.BranchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
+
+            ValidateSelectedCourses(model.BranchId, model.SelectedBranchCourseIds);
+
             if (!ModelState.IsValid)
-            {
-                model.BranchOptions = await _context.Branches
-                    .Select(b => new SelectListItem
-                    {
-                        Value = b.Id.ToString(),
-                        Text = b.Name
-                    })
-                    .ToListAsync();
-
-                model.BranchCourseOptions = await _context.BranchCourses
-                    .Include(bc => bc.Course)
-                    .Where(bc => bc.BranchId == model.BranchId)
-                    .Select(bc => new SelectListItem
-                    {
-                        Value = bc.Id.ToString(),
-                        Text = bc.Course.Name
-                    })
-                    .ToListAsync();
-
                 return View(model);
-            }
 
             var faculty = await _context.FacultyProfiles
                 .Include(f => f.FacultyCourseAssignments)
@@ -263,25 +232,20 @@ namespace Global_College.mvc.Controllers
             var existingAssignments = faculty.FacultyCourseAssignments.ToList();
             _context.FacultyCourseAssignments.RemoveRange(existingAssignments);
 
-            if (model.SelectedBranchCourseIds != null && model.SelectedBranchCourseIds.Any())
+            foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
             {
-                foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
+                _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
                 {
-                    _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
-                    {
-                        FacultyProfileId = faculty.Id,
-                        BranchCourseId = branchCourseId
-                    });
-                }
+                    FacultyProfileId = faculty.Id,
+                    BranchCourseId = branchCourseId
+                });
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        // =========================
         // DELETE - GET
-        // =========================
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -299,9 +263,7 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfile);
         }
 
-        // =========================
         // DELETE - POST
-        // =========================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -318,6 +280,69 @@ namespace Global_College.mvc.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<string> GenerateUniqueFacultyNumberAsync()
+        {
+            var random = new Random();
+            string facultyNumber;
+            bool exists;
+
+            do
+            {
+                facultyNumber = random.Next(0, 100000).ToString("D5");
+                exists = await _context.FacultyProfiles.AnyAsync(f => f.FacultyNumber == facultyNumber);
+            }
+            while (exists);
+
+            return facultyNumber;
+        }
+
+        private async Task LoadCreateViewData(int branchId)
+        {
+            ViewBag.BranchOptions = await _context.Branches
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name
+                })
+                .ToListAsync();
+
+            ViewBag.BranchCourseOptions = await _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == branchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
+        }
+
+        private void ValidateSelectedCourses(int branchId, List<int> selectedBranchCourseIds)
+        {
+            if (selectedBranchCourseIds == null || !selectedBranchCourseIds.Any())
+            {
+                ModelState.AddModelError("SelectedBranchCourseIds", "Select at least one course.");
+                return;
+            }
+
+            var selectedIds = selectedBranchCourseIds.Distinct().ToList();
+
+            var selectedBranchCourses = _context.BranchCourses
+                .Where(bc => selectedIds.Contains(bc.Id))
+                .ToList();
+
+            if (selectedBranchCourses.Count != selectedIds.Count)
+            {
+                ModelState.AddModelError("SelectedBranchCourseIds", "One or more selected courses are invalid.");
+                return;
+            }
+
+            if (selectedBranchCourses.Any(bc => bc.BranchId != branchId))
+            {
+                ModelState.AddModelError("SelectedBranchCourseIds", "All selected courses must belong to the same city/branch.");
+            }
         }
     }
 }

@@ -20,6 +20,8 @@ namespace Global_College.domain.Models.Administrator
         [Phone]
         public string? Phone { get; set; } = string.Empty;
 
+        public string FacultyNumber { get; set; } = string.Empty;
+
         public string SystemEmail { get; set; } = string.Empty;
         public string SystemPassword { get; set; } = string.Empty;
 
