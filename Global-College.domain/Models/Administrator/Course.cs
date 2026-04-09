@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Global_College.domain.Models.Faculty;
 using Global_College.domain.Models.Student;
 
@@ -18,8 +15,8 @@ namespace Global_College.domain.Models.Administrator
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        public DateOnly StartDate { get; set; }
-        public DateOnly EndDate { get; set; }
+        [Display(Name = "Created At")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation between entities. Where course is connected with CourseEnrolments, FacultyCourseAssignment, assignments, and exams.
         // These collections allow access to the related entities associated with this Course.
@@ -28,14 +25,13 @@ namespace Global_College.domain.Models.Administrator
         public ICollection<Exam> Exams { get; set; } = new List<Exam>();
         public ICollection<BranchCourse> BranchCourses { get; set; } = new List<BranchCourse>();
 
-        // Validates that EndDate is not earlier than StartDate
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (EndDate < StartDate)
+            if (string.IsNullOrWhiteSpace(Name))
             {
                 yield return new ValidationResult(
-                    "End date cannot be earlier than start date.",
-                    new[] { nameof(EndDate) });
+                    "Course name is required.",
+                    new[] { nameof(Name) });
             }
         }
     }

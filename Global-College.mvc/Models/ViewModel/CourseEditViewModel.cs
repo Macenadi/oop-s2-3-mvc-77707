@@ -10,12 +10,6 @@ namespace Global_College.mvc.Models.ViewModel
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        public DateOnly StartDate { get; set; }
-
-        [Required]
-        public DateOnly EndDate { get; set; }
-
         public bool RequiresAdminPasswordConfirmation { get; set; }
 
         [DataType(DataType.Password)]

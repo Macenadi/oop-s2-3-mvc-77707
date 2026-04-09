@@ -68,15 +68,12 @@ namespace Global_College.mvc.Controllers
         // POST: Courses/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,StartDate,EndDate")] Course course)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Course course)
         {
-            if (course.EndDate < course.StartDate)
-            {
-                ModelState.AddModelError("EndDate", "End date cannot be earlier than start date.");
-            }
-
             if (ModelState.IsValid)
             {
+                course.CreatedAt = DateTime.UtcNow;
+
                 _context.Add(course);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Course created successfully.";
@@ -107,8 +104,6 @@ namespace Global_College.mvc.Controllers
             {
                 Id = course.Id,
                 Name = course.Name,
-                StartDate = course.StartDate,
-                EndDate = course.EndDate,
                 RequiresAdminPasswordConfirmation = course.BranchCourses.Any()
             };
 
@@ -137,11 +132,6 @@ namespace Global_College.mvc.Controllers
             var requiresPasswordConfirmation = course.BranchCourses.Any();
             model.RequiresAdminPasswordConfirmation = requiresPasswordConfirmation;
 
-            if (model.EndDate < model.StartDate)
-            {
-                ModelState.AddModelError("EndDate", "End date cannot be earlier than start date.");
-            }
-
             if (requiresPasswordConfirmation)
             {
                 if (string.IsNullOrWhiteSpace(model.AdminPassword))
@@ -165,8 +155,6 @@ namespace Global_College.mvc.Controllers
             }
 
             course.Name = model.Name;
-            course.StartDate = model.StartDate;
-            course.EndDate = model.EndDate;
 
             try
             {
