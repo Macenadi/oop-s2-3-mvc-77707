@@ -28,8 +28,7 @@
             <thead>
                 <tr>
                     <th>Course Name</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
+                    <th>Created At</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,8 +36,7 @@
                 {
                     <tr>
                         <td>@branchCourse.Course?.Name</td>
-                        <td>@branchCourse.Course?.StartDate</td>
-                        <td>@branchCourse.Course?.EndDate</td>
+                        <td>@(branchCourse.Course != null ? branchCourse.Course.CreatedAt.ToString("dd/MM/yyyy") : "-")</td>
                     </tr>
                 }
             </tbody>
