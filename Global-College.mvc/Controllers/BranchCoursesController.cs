@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Global_College.mvc.Models.ViewModel;
+
 
 namespace Global_College.mvc.Controllers
 {
@@ -51,7 +53,20 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
-            return View(branchCourse);
+            var relatedBranchCourses = await _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == branchCourse.BranchId)
+                .OrderBy(bc => bc.Course.Name)
+                .ThenBy(bc => bc.StartDate)
+                .ToListAsync();
+
+            var viewModel = new BranchCourseDetailsViewModel
+            {
+                BranchCourse = branchCourse,
+                RelatedBranchCourses = relatedBranchCourses
+            };
+
+            return View(viewModel);
         }
 
         // GET: BranchCourses/Create
