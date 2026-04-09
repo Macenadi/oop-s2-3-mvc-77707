@@ -25,7 +25,10 @@ namespace Global_College.mvc.Controllers
         {
             var applicationDbContext = _context.BranchCourses
                 .Include(bc => bc.Branch)
-                .Include(bc => bc.Course);
+                .Include(bc => bc.Course)
+                .OrderBy(bc => bc.Branch.Name)
+                .ThenBy(bc => bc.Course.Name)
+                .ThenBy(bc => bc.StartDate);
 
             return View(await applicationDbContext.ToListAsync());
         }
@@ -54,32 +57,70 @@ namespace Global_College.mvc.Controllers
         // GET: BranchCourses/Create
         public IActionResult Create()
         {
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name");
+            ViewData["BranchId"] = new SelectList(
+                _context.Branches
+                    .Select(b => new
+                    {
+                        b.Id,
+                        Display = b.Name + " - " + b.Address
+                    }),
+                "Id",
+                "Display");
+
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name");
+
             return View();
         }
 
         // POST: BranchCourses/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,BranchId,CourseId")] BranchCourse branchCourse)
+        public async Task<IActionResult> Create([Bind("Id,BranchId,CourseId,StartDate,EndDate")] BranchCourse branchCourse)
         {
+            if (branchCourse.EndDate < branchCourse.StartDate)
+            {
+                ModelState.AddModelError("EndDate", "End date cannot be earlier than start date.");
+            }
+
+            // Generate ClassCode automatically before final validation
+            branchCourse.ClassCode = await GenerateClassCodeAsync(
+                branchCourse.BranchId,
+                branchCourse.CourseId,
+                branchCourse.StartDate
+            );
+
+            // Remove any old validation error for ClassCode
+            ModelState.Remove("ClassCode");
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Add(branchCourse);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Branch course created successfully.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException)
                 {
-                    ModelState.AddModelError("", "This course is already assigned to this branch.");
+                    ModelState.AddModelError("", "This branch course could not be saved. Please try again.");
                 }
             }
 
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", branchCourse.BranchId);
+            ViewData["BranchId"] = new SelectList(
+                _context.Branches
+                    .Select(b => new
+                    {
+                        b.Id,
+                        Display = b.Name + " - " + b.Address
+                    }),
+                "Id",
+                "Display",
+                branchCourse.BranchId);
+
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", branchCourse.CourseId);
+
             return View(branchCourse);
         }
 
@@ -97,19 +138,35 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", branchCourse.BranchId);
+            ViewData["BranchId"] = new SelectList(
+                _context.Branches
+                    .Select(b => new
+                    {
+                        b.Id,
+                        Display = b.Name + " - " + b.Address
+                    }),
+                "Id",
+                "Display",
+                branchCourse.BranchId);
+
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", branchCourse.CourseId);
+
             return View(branchCourse);
         }
 
         // POST: BranchCourses/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BranchId,CourseId")] BranchCourse branchCourse)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BranchId,CourseId,ClassCode,StartDate,EndDate")] BranchCourse branchCourse)
         {
             if (id != branchCourse.Id)
             {
                 return NotFound();
+            }
+
+            if (branchCourse.EndDate < branchCourse.StartDate)
+            {
+                ModelState.AddModelError("EndDate", "End date cannot be earlier than start date.");
             }
 
             if (ModelState.IsValid)
@@ -118,6 +175,8 @@ namespace Global_College.mvc.Controllers
                 {
                     _context.Update(branchCourse);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Branch course updated successfully.";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -131,12 +190,23 @@ namespace Global_College.mvc.Controllers
                 }
                 catch (DbUpdateException)
                 {
-                    ModelState.AddModelError("", "This course is already assigned to this branch.");
+                    ModelState.AddModelError("", "This branch course could not be updated. Please check the values and try again.");
                 }
             }
 
-            ViewData["BranchId"] = new SelectList(_context.Branches, "Id", "Name", branchCourse.BranchId);
+            ViewData["BranchId"] = new SelectList(
+                _context.Branches
+                    .Select(b => new
+                    {
+                        b.Id,
+                        Display = b.Name + " - " + b.Address
+                    }),
+                "Id",
+                "Display",
+                branchCourse.BranchId);
+
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", branchCourse.CourseId);
+
             return View(branchCourse);
         }
 
@@ -168,10 +238,21 @@ namespace Global_College.mvc.Controllers
         {
             var branchCourse = await _context.BranchCourses.FindAsync(id);
 
-            if (branchCourse != null)
+            if (branchCourse == null)
+            {
+                return NotFound();
+            }
+
+            try
             {
                 _context.BranchCourses.Remove(branchCourse);
                 await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Branch course deleted successfully.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] = "This branch course could not be deleted because it is linked to other records.";
             }
 
             return RedirectToAction(nameof(Index));
@@ -180,6 +261,46 @@ namespace Global_College.mvc.Controllers
         private bool BranchCourseExists(int id)
         {
             return _context.BranchCourses.Any(e => e.Id == id);
+        }
+
+        private async Task<string> GenerateClassCodeAsync(int branchId, int courseId, DateOnly startDate)
+        {
+            var branch = await _context.Branches.FindAsync(branchId);
+            var course = await _context.Courses.FindAsync(courseId);
+
+            var branchPart = "BR";
+
+            if (branch != null && !string.IsNullOrWhiteSpace(branch.Name))
+            {
+                branchPart = new string(branch.Name
+                    .Where(char.IsLetterOrDigit)
+                    .Take(3)
+                    .ToArray())
+                    .ToUpper();
+
+                if (branchPart.Length < 3)
+                {
+                    branchPart = branchPart.PadRight(3, 'X');
+                }
+            }
+
+            var courseWords = (course?.Name ?? "COURSE")
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var coursePart = string.Concat(courseWords.Select(w => char.ToUpper(w[0])));
+
+            if (string.IsNullOrWhiteSpace(coursePart))
+            {
+                coursePart = "CRS";
+            }
+
+            var yearPart = startDate.Year.ToString();
+            var baseCode = $"{branchPart}-{coursePart}-{yearPart}";
+
+            var existingCount = await _context.BranchCourses
+                .CountAsync(bc => bc.ClassCode.StartsWith(baseCode));
+
+            return $"{baseCode}-{(existingCount + 1):D3}";
         }
     }
 }

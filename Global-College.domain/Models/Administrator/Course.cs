@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ using Global_College.domain.Models.Student;
 
 namespace Global_College.domain.Models.Administrator
 {
-    public class Course
+    public class Course : IValidatableObject
     {
         // Represents a course and its associated branch.
         public int Id { get; set; }
@@ -18,6 +17,7 @@ namespace Global_College.domain.Models.Administrator
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
+
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
 
@@ -27,7 +27,6 @@ namespace Global_College.domain.Models.Administrator
         public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
         public ICollection<Exam> Exams { get; set; } = new List<Exam>();
         public ICollection<BranchCourse> BranchCourses { get; set; } = new List<BranchCourse>();
-
 
         // Validates that EndDate is not earlier than StartDate
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
