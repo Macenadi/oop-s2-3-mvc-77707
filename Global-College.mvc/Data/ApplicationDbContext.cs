@@ -130,11 +130,11 @@ namespace Global_College.mvc.Data
 
             // Courses
             builder.Entity<Course>().HasData(
-                new Course { Id = 1, Name = "Computer Science", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
-                new Course { Id = 2, Name = "Business", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
-                new Course { Id = 3, Name = "Engineering", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
-                new Course { Id = 4, Name = "Design", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
-                new Course { Id = 5, Name = "Marketing", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) }
+                new Course { Id = 1, Name = "Computer Science", CreatedAt = new DateTime(2025, 1, 1) },
+                new Course { Id = 2, Name = "Business", CreatedAt = new DateTime(2025, 1, 1) },
+                new Course { Id = 3, Name = "Engineering", CreatedAt = new DateTime(2025, 1, 1) },
+                new Course { Id = 4, Name = "Design", CreatedAt = new DateTime(2025, 1, 1) },
+                new Course { Id = 5, Name = "Marketing", CreatedAt = new DateTime(2025, 1, 1) }
             );
 
             // BranchCourse (N:N)

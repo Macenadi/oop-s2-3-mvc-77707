@@ -76,7 +76,7 @@ namespace Global_College.mvc.Controllers
                 .Select(bc => new
                 {
                     id = bc.Id,
-                    name = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
+                    name = bc.Course.Name
                 })
                 .ToListAsync();
 
@@ -174,14 +174,14 @@ namespace Global_College.mvc.Controllers
                 .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
-     .Include(bc => bc.Course)
-     .Where(bc => bc.BranchId == selectedBranchId)
-     .Select(bc => new SelectListItem
-     {
-         Value = bc.Id.ToString(),
-         Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
-     })
-     .ToListAsync();
+    .Include(bc => bc.Course)
+    .Where(bc => bc.BranchId == selectedBranchId)
+    .Select(bc => new SelectListItem
+    {
+        Value = bc.Id.ToString(),
+        Text = bc.Course.Name
+    })
+    .ToListAsync();
 
             return View(model);
         }
@@ -202,14 +202,14 @@ namespace Global_College.mvc.Controllers
             .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
-                .Include(bc => bc.Course)
-                .Where(bc => bc.BranchId == model.BranchId)
-                .Select(bc => new SelectListItem
-                {
-                    Value = bc.Id.ToString(),
-                    Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
-                })
-                .ToListAsync();
+    .Include(bc => bc.Course)
+    .Where(bc => bc.BranchId == model.BranchId)
+    .Select(bc => new SelectListItem
+    {
+        Value = bc.Id.ToString(),
+        Text = bc.Course.Name
+    })
+    .ToListAsync();
 
             await ValidateSelectedCoursesAsync(model.BranchId, model.SelectedBranchCourseIds);
 
@@ -262,7 +262,7 @@ namespace Global_College.mvc.Controllers
                         ActionType = "Removed",
                         CourseName = removedBranchCourse.Course?.Name ?? "",
                         BranchName = removedBranchCourse.Branch?.Name ?? "",
-                        CourseStartDate = removedBranchCourse.Course?.StartDate,
+                        CourseStartDate = null,
                         Justification = model.ChangeJustification ?? "",
                         ChangedAt = DateTime.Now
                     });
@@ -284,7 +284,7 @@ namespace Global_College.mvc.Controllers
                         ActionType = "Added",
                         CourseName = addedBranchCourse.Course?.Name ?? "",
                         BranchName = addedBranchCourse.Branch?.Name ?? "",
-                        CourseStartDate = addedBranchCourse.Course?.StartDate,
+                        CourseStartDate = null,
                         Justification = model.ChangeJustification ?? "",
                         ChangedAt = DateTime.Now
                     });
@@ -368,14 +368,14 @@ namespace Global_College.mvc.Controllers
                 .ToListAsync();
 
             ViewBag.BranchCourseOptions = await _context.BranchCourses
-                .Include(bc => bc.Course)
-                .Where(bc => bc.BranchId == branchId)
-                .Select(bc => new SelectListItem
-                {
-                    Value = bc.Id.ToString(),
-                    Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
-                })
-                .ToListAsync();
+    .Include(bc => bc.Course)
+    .Where(bc => bc.BranchId == branchId)
+    .Select(bc => new SelectListItem
+    {
+        Value = bc.Id.ToString(),
+        Text = bc.Course.Name
+    })
+    .ToListAsync();
         }
 
         private async Task ValidateSelectedCoursesAsync(int branchId, List<int> selectedBranchCourseIds)

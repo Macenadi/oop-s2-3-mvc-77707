@@ -55,7 +55,7 @@
                 <tr>
                     <td>@item.BranchCourse?.Branch?.Name</td>
                     <td>@item.BranchCourse?.Course?.Name</td>
-                    <td>@item.BranchCourse?.Course?.StartDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.BranchCourse?.Course?.CreatedAt.ToString("dd/MM/yyyy") ?? "N/A"</td>
                 </tr>
             }
         </tbody>
@@ -72,7 +72,7 @@
                     <th>Action</th>
                     <th>Branch</th>
                     <th>Course</th>
-                    <th>Course Start</th>
+                    <th>Created At</th>
                     <th>Justification</th>
                 </tr>
             </thead>

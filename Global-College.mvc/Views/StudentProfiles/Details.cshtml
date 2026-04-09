@@ -53,8 +53,7 @@
                         <tr>
                             <th>Branch</th>
                             <th>Course</th>
-                            <th>Course Start</th>
-                            <th>Course End</th>
+                            <th>Course Created At</th>
                             <th>Enrol Date</th>
                             <th>Status</th>
                             <th>Stopped Date</th>
@@ -67,8 +66,7 @@
                         <tr>
                             <td>@enrolment.BranchCourse?.Branch?.Name</td>
                             <td>@enrolment.BranchCourse?.Course?.Name</td>
-                            <td>@enrolment.BranchCourse?.Course?.StartDate</td>
-                            <td>@enrolment.BranchCourse?.Course?.EndDate</td>
+                            <td>@enrolment.BranchCourse?.Course?.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td>@enrolment.EnrolDate</td>
                             <td>@enrolment.Status</td>
                             <td>

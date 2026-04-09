@@ -41,8 +41,7 @@
                 <tr>
                     <th>City / Branch</th>
                     <th>Course</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
+                    <th>Created At</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,8 +50,7 @@
                     <tr>
                         <td>@assignment.BranchCourse?.Branch?.Name</td>
                         <td>@assignment.BranchCourse?.Course?.Name</td>
-                        <td>@assignment.BranchCourse?.Course?.StartDate</td>
-                        <td>@assignment.BranchCourse?.Course?.EndDate</td>
+                        <td>@assignment.BranchCourse?.Course?.CreatedAt.ToString("dd/MM/yyyy")</td>
                     </tr>
                 }
             </tbody>

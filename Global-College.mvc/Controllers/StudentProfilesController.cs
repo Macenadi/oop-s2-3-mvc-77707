@@ -82,47 +82,8 @@ namespace Global_College.mvc.Controllers
                 ModelState.AddModelError("BranchCourseId", "Invalid course.");
                 LoadBranchCoursesDropDown(model.BranchCourseId);
                 return View(model);
-            }
+            };
 
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            var start = selectedBranchCourse.Course.StartDate;
-            var limit = start.AddDays(20);
-
-            bool allowed = today <= limit;
-
-            if (!allowed)
-            {
-                model.RequiresOverrideApproval = true;
-
-                bool ok = true;
-
-                if (string.IsNullOrWhiteSpace(model.AdminPassword))
-                {
-                    ModelState.AddModelError("AdminPassword", "Admin password required.");
-                    ok = false;
-                }
-                else
-                {
-                    var user = await _userManager.GetUserAsync(User);
-                    if (user == null || !await _userManager.CheckPasswordAsync(user, model.AdminPassword))
-                    {
-                        ModelState.AddModelError("AdminPassword", "Invalid password.");
-                        ok = false;
-                    }
-                }
-
-                if (string.IsNullOrWhiteSpace(model.Justification))
-                {
-                    ModelState.AddModelError("Justification", "Justification required.");
-                    ok = false;
-                }
-
-                if (!ok)
-                {
-                    LoadBranchCoursesDropDown(model.BranchCourseId);
-                    return View(model);
-                }
-            }
 
             if (!ModelState.IsValid)
             {
@@ -414,13 +375,12 @@ namespace Global_College.mvc.Controllers
                 .Include(bc => bc.Branch)
                 .Include(bc => bc.Course)
                 .OrderBy(bc => bc.Branch.Name)
-                .ThenBy(bc => bc.Course.Name)
-                .ThenBy(bc => bc.Course.StartDate)
-                .Select(bc => new
-                {
-                    bc.Id,
-                    DisplayName = bc.Branch.Name + " - " + bc.Course.Name + " - Start: " + bc.Course.StartDate
-                })
+.ThenBy(bc => bc.Course.Name)
+.Select(bc => new
+{
+    bc.Id,
+    DisplayName = bc.Branch.Name + " - " + bc.Course.Name
+})
                 .ToList();
 
             ViewData["BranchCourseId"] = new SelectList(branchCourses, "Id", "DisplayName", selectedBranchCourseId);
@@ -432,14 +392,13 @@ namespace Global_College.mvc.Controllers
                 .Include(bc => bc.Branch)
                 .Include(bc => bc.Course)
                 .OrderBy(bc => bc.Branch.Name)
-                .ThenBy(bc => bc.Course.Name)
-                .ThenBy(bc => bc.Course.StartDate)
-                .Select(bc => new SelectListItem
-                {
-                    Value = bc.Id.ToString(),
-                    Text = bc.Branch.Name + " - " + bc.Course.Name + " - Start: " + bc.Course.StartDate,
-                    Selected = model.BranchCourseId == bc.Id
-                })
+.ThenBy(bc => bc.Course.Name)
+.Select(bc => new SelectListItem
+{
+    Value = bc.Id.ToString(),
+    Text = bc.Branch.Name + " - " + bc.Course.Name,
+    Selected = model.BranchCourseId == bc.Id
+})
                 .ToListAsync();
 
             model.StatusOptions = new List<SelectListItem>
