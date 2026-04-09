@@ -1,13 +1,10 @@
 ﻿using Global_College.domain.Models.Administrator;
 using Global_College.mvc.Data;
+using Global_College.mvc.Models.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Global_College.mvc.Controllers
 {
@@ -21,139 +18,306 @@ namespace Global_College.mvc.Controllers
             _context = context;
         }
 
-        // GET: FacultyProfiles
+        // =========================
+        // INDEX
+        // =========================
         public async Task<IActionResult> Index()
         {
-            return View(await _context.FacultyProfiles.ToListAsync());
+            var facultyProfiles = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                    .ThenInclude(fca => fca.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
+                .ToListAsync();
+
+            return View(facultyProfiles);
         }
 
-        // GET: FacultyProfiles/Details/5
+        // =========================
+        // DETAILS
+        // =========================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var facultyProfile = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                    .ThenInclude(fca => fca.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (facultyProfile == null)
-            {
                 return NotFound();
-            }
 
             return View(facultyProfile);
         }
 
-        // GET: FacultyProfiles/Create
-        public IActionResult Create()
+        // =========================
+        // CREATE - GET
+        // =========================
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var model = new FacultyProfileCreateViewModel();
+
+            ViewBag.BranchOptions = await _context.Branches
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name
+                })
+                .ToListAsync();
+
+            ViewBag.BranchCourseOptions = new List<SelectListItem>();
+
+            return View(model);
         }
 
-        // POST: FacultyProfiles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // =========================
+        // CREATE - AJAX
+        // =========================
+        [HttpGet]
+        public async Task<JsonResult> GetCoursesByBranch(int branchId)
+        {
+            var courses = await _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == branchId)
+                .Select(bc => new
+                {
+                    id = bc.Id,
+                    name = bc.Course.Name
+                })
+                .ToListAsync();
+
+            return Json(courses);
+        }
+
+        // =========================
+        // CREATE - POST
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,IdentityUserId,FullName,Email,Phone")] FacultyProfile facultyProfile)
+        public async Task<IActionResult> Create(FacultyProfileCreateViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(facultyProfile);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.BranchOptions = await _context.Branches
+                    .Select(b => new SelectListItem
+                    {
+                        Value = b.Id.ToString(),
+                        Text = b.Name
+                    })
+                    .ToListAsync();
+
+                ViewBag.BranchCourseOptions = await _context.BranchCourses
+                    .Include(bc => bc.Course)
+                    .Where(bc => bc.BranchId == model.BranchId)
+                    .Select(bc => new SelectListItem
+                    {
+                        Value = bc.Id.ToString(),
+                        Text = bc.Course.Name
+                    })
+                    .ToListAsync();
+
+                return View(model);
             }
-            return View(facultyProfile);
+
+            string facultyNumber = new Random().Next(10000, 99999).ToString();
+
+            var faculty = new FacultyProfile
+            {
+                FullName = model.FullName,
+                Email = model.Email,
+                Phone = model.Phone ?? "",
+                IdentityUserId = "faculty" + facultyNumber,
+                SystemEmail = $"{facultyNumber}@college.com",
+                SystemPassword = "TempPassword123!"
+            };
+
+            _context.FacultyProfiles.Add(faculty);
+            await _context.SaveChangesAsync();
+
+            if (model.SelectedBranchCourseIds != null && model.SelectedBranchCourseIds.Any())
+            {
+                foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
+                {
+                    _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
+                    {
+                        FacultyProfileId = faculty.Id,
+                        BranchCourseId = branchCourseId
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: FacultyProfiles/Edit/5
+        // =========================
+        // EDIT - GET
+        // =========================
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
+
+            var faculty = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (faculty == null)
+                return NotFound();
+
+            int selectedBranchId = 0;
+
+            var firstAssignment = faculty.FacultyCourseAssignments.FirstOrDefault();
+            if (firstAssignment != null)
+            {
+                var branchCourse = await _context.BranchCourses
+                    .FirstOrDefaultAsync(bc => bc.Id == firstAssignment.BranchCourseId);
+
+                if (branchCourse != null)
+                    selectedBranchId = branchCourse.BranchId;
             }
 
-            var facultyProfile = await _context.FacultyProfiles.FindAsync(id);
-            if (facultyProfile == null)
+            var model = new FacultyProfileEditViewModel
             {
-                return NotFound();
-            }
-            return View(facultyProfile);
+                Id = faculty.Id,
+                IdentityUserId = faculty.IdentityUserId,
+                SystemEmail = faculty.SystemEmail,
+                SystemPassword = faculty.SystemPassword,
+                FullName = faculty.FullName,
+                Email = faculty.Email,
+                Phone = faculty.Phone,
+                BranchId = selectedBranchId,
+                SelectedBranchCourseIds = faculty.FacultyCourseAssignments
+                    .Select(a => a.BranchCourseId)
+                    .ToList()
+            };
+
+            model.BranchOptions = await _context.Branches
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name
+                })
+                .ToListAsync();
+
+            model.BranchCourseOptions = await _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == selectedBranchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
+
+            return View(model);
         }
 
-        // POST: FacultyProfiles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // =========================
+        // EDIT - POST
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,IdentityUserId,FullName,Email,Phone")] FacultyProfile facultyProfile)
+        public async Task<IActionResult> Edit(int id, FacultyProfileEditViewModel model)
         {
-            if (id != facultyProfile.Id)
-            {
+            if (id != model.Id)
                 return NotFound();
-            }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(facultyProfile);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!FacultyProfileExists(facultyProfile.Id))
+                model.BranchOptions = await _context.Branches
+                    .Select(b => new SelectListItem
                     {
-                        return NotFound();
-                    }
-                    else
+                        Value = b.Id.ToString(),
+                        Text = b.Name
+                    })
+                    .ToListAsync();
+
+                model.BranchCourseOptions = await _context.BranchCourses
+                    .Include(bc => bc.Course)
+                    .Where(bc => bc.BranchId == model.BranchId)
+                    .Select(bc => new SelectListItem
                     {
-                        throw;
-                    }
+                        Value = bc.Id.ToString(),
+                        Text = bc.Course.Name
+                    })
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+            var faculty = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (faculty == null)
+                return NotFound();
+
+            faculty.FullName = model.FullName;
+            faculty.Email = model.Email;
+            faculty.Phone = model.Phone ?? "";
+
+            var existingAssignments = faculty.FacultyCourseAssignments.ToList();
+            _context.FacultyCourseAssignments.RemoveRange(existingAssignments);
+
+            if (model.SelectedBranchCourseIds != null && model.SelectedBranchCourseIds.Any())
+            {
+                foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
+                {
+                    _context.FacultyCourseAssignments.Add(new FacultyCourseAssignment
+                    {
+                        FacultyProfileId = faculty.Id,
+                        BranchCourseId = branchCourseId
+                    });
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(facultyProfile);
-        }
-
-        // GET: FacultyProfiles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var facultyProfile = await _context.FacultyProfiles
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (facultyProfile == null)
-            {
-                return NotFound();
-            }
-
-            return View(facultyProfile);
-        }
-
-        // POST: FacultyProfiles/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var facultyProfile = await _context.FacultyProfiles.FindAsync(id);
-            if (facultyProfile != null)
-            {
-                _context.FacultyProfiles.Remove(facultyProfile);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool FacultyProfileExists(int id)
+        // =========================
+        // DELETE - GET
+        // =========================
+        public async Task<IActionResult> Delete(int? id)
         {
-            return _context.FacultyProfiles.Any(e => e.Id == id);
+            if (id == null)
+                return NotFound();
+
+            var facultyProfile = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                    .ThenInclude(fca => fca.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (facultyProfile == null)
+                return NotFound();
+
+            return View(facultyProfile);
+        }
+
+        // =========================
+        // DELETE - POST
+        // =========================
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var facultyProfile = await _context.FacultyProfiles
+                .Include(f => f.FacultyCourseAssignments)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (facultyProfile != null)
+            {
+                _context.FacultyCourseAssignments.RemoveRange(facultyProfile.FacultyCourseAssignments);
+                _context.FacultyProfiles.Remove(facultyProfile);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

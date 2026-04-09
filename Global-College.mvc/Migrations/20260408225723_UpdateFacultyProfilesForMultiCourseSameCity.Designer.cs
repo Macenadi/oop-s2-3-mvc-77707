@@ -4,6 +4,7 @@ using Global_College.mvc.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Global_College.mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408225723_UpdateFacultyProfilesForMultiCourseSameCity")]
+    partial class UpdateFacultyProfilesForMultiCourseSameCity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -684,7 +687,7 @@ namespace Global_College.mvc.Migrations
                     b.Property<int>("BranchCourseId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<int>("FacultyProfileId")
@@ -1892,9 +1895,11 @@ namespace Global_College.mvc.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Global_College.domain.Models.Administrator.Course", null)
+                    b.HasOne("Global_College.domain.Models.Administrator.Course", "Course")
                         .WithMany("FacultyCourseAssignments")
-                        .HasForeignKey("CourseId");
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Global_College.domain.Models.Administrator.FacultyProfile", "FacultyProfile")
                         .WithMany("FacultyCourseAssignments")
@@ -1903,6 +1908,8 @@ namespace Global_College.mvc.Migrations
                         .IsRequired();
 
                     b.Navigation("BranchCourse");
+
+                    b.Navigation("Course");
 
                     b.Navigation("FacultyProfile");
                 });

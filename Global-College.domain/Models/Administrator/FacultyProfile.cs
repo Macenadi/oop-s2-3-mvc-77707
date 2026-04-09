@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Global_College.domain.Models.Faculty;
-using Global_College.domain.Models.Student;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Global_College.domain.Models.Administrator
 {
@@ -22,12 +15,14 @@ namespace Global_College.domain.Models.Administrator
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty; // personal email
 
         [Phone]
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; } = string.Empty;
 
-        // Navigation property for faculty-course assignments (one faculty to many courses)
+        public string SystemEmail { get; set; } = string.Empty;
+        public string SystemPassword { get; set; } = string.Empty;
+
         public ICollection<FacultyCourseAssignment> FacultyCourseAssignments { get; set; } = new List<FacultyCourseAssignment>();
     }
 }

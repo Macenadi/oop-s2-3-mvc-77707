@@ -1,4 +1,4 @@
-﻿@model Global_College.domain.Models.Administrator.FacultyCourseAssignment
+﻿@model Global_College.domain.Models.Administrator.FacultyProfile
 
 @{
     ViewData["Title"] = "Details";
@@ -7,23 +7,63 @@
 <h1>Details</h1>
 
 <div>
-    <h4>FacultyCourseAssignment</h4>
+    <h4>Faculty Profile</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Course)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Course.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FacultyProfile)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FacultyProfile.Email)
-        </dd>
+        <dt class="col-sm-2">Full Name</dt>
+        <dd class="col-sm-10">@Model.FullName</dd>
+
+        <dt class="col-sm-2">Personal Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Phone</dt>
+        <dd class="col-sm-10">@Model.Phone</dd>
+
+        <dt class="col-sm-2">Identity User ID</dt>
+        <dd class="col-sm-10">@Model.IdentityUserId</dd>
+
+        <dt class="col-sm-2">System Email</dt>
+        <dd class="col-sm-10">@Model.SystemEmail</dd>
+
+        <dt class="col-sm-2">System Password</dt>
+        <dd class="col-sm-10">@Model.SystemPassword</dd>
     </dl>
 </div>
+
+<div class="mt-4">
+    <h4>Assigned Courses</h4>
+    <hr />
+
+    @if (Model.FacultyCourseAssignments != null && Model.FacultyCourseAssignments.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>City / Branch</th>
+                    <th>Course</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var assignment in Model.FacultyCourseAssignments)
+                {
+                    <tr>
+                        <td>@assignment.BranchCourse?.Branch?.Name</td>
+                        <td>@assignment.BranchCourse?.Course?.Name</td>
+                        <td>@assignment.BranchCourse?.Course?.StartDate</td>
+                        <td>@assignment.BranchCourse?.Course?.EndDate</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No assigned courses.</p>
+    }
+</div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

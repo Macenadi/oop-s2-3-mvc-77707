@@ -36,6 +36,7 @@ namespace Global_College.mvc.Data
         public DbSet<Exam> Exams { get; set; }
         public DbSet<ExamResult> ExamResults { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -88,6 +89,25 @@ namespace Global_College.mvc.Data
                 .WithMany(e => e.ChangeHistories)
                 .HasForeignKey(h => h.CourseEnrolmentId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // FacultyCourseAssignment -> FacultyProfile
+            builder.Entity<FacultyCourseAssignment>()
+                .HasOne(fca => fca.FacultyProfile)
+                .WithMany(fp => fp.FacultyCourseAssignments)
+                .HasForeignKey(fca => fca.FacultyProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // FacultyCourseAssignment -> BranchCourse
+            builder.Entity<FacultyCourseAssignment>()
+                .HasOne(fca => fca.BranchCourse)
+                .WithMany()
+                .HasForeignKey(fca => fca.BranchCourseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevent duplicates
+            builder.Entity<FacultyCourseAssignment>()
+                .HasIndex(fca => new { fca.FacultyProfileId, fca.BranchCourseId })
+                .IsUnique();
 
             // =========================
             // SEED DATA
