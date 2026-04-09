@@ -33,15 +33,68 @@
 
         <dt class="col-sm-3">Identity User ID</dt>
         <dd class="col-sm-9">@Model.IdentityUserId</dd>
+
+        <dt class="col-sm-3">Created At</dt>
+        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
     </dl>
 
-    <h5>Assigned Courses</h5>
-    <ul>
-        @foreach (var item in Model.FacultyCourseAssignments)
-        {
-            <li>@item.BranchCourse?.Course?.Name</li>
-        }
-    </ul>
+    <h5>Assigned Courses and Branch</h5>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Branch</th>
+                <th>Course</th>
+                <th>Course Start</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.FacultyCourseAssignments)
+            {
+                <tr>
+                    <td>@item.BranchCourse?.Branch?.Name</td>
+                    <td>@item.BranchCourse?.Course?.Name</td>
+                    <td>@item.BranchCourse?.Course?.StartDate.ToString("dd/MM/yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h5 class="mt-4">Course Change History</h5>
+
+    @if (Model.ChangeHistories != null && Model.ChangeHistories.Any())
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Changed At</th>
+                    <th>Action</th>
+                    <th>Branch</th>
+                    <th>Course</th>
+                    <th>Course Start</th>
+                    <th>Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.ChangeHistories.OrderByDescending(x => x.ChangedAt))
+                {
+                    <tr>
+                        <td>@item.ChangedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@item.ActionType</td>
+                        <td>@item.BranchName</td>
+                        <td>@item.CourseName</td>
+                        <td>@item.CourseStartDate?.ToString("dd/MM/yyyy")</td>
+                        <td>@item.Justification</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No course change history found.</p>
+    }
 </div>
 
 <div>

@@ -20,11 +20,14 @@ namespace Global_College.domain.Models.Administrator
         [Phone]
         public string? Phone { get; set; } = string.Empty;
 
+        public DateTime CreatedAt { get; set; }
+
         public string FacultyNumber { get; set; } = string.Empty;
 
         public string SystemEmail { get; set; } = string.Empty;
         public string SystemPassword { get; set; } = string.Empty;
 
         public ICollection<FacultyCourseAssignment> FacultyCourseAssignments { get; set; } = new List<FacultyCourseAssignment>();
+        public ICollection<FacultyCourseAssignmentChangeHistory> ChangeHistories { get; set; } = new List<FacultyCourseAssignmentChangeHistory>();
     }
 }

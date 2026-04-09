@@ -4,6 +4,7 @@ using Global_College.mvc.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Global_College.mvc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260409014334_AddFacultyCreatedAtAndCourseChangeHistory")]
+    partial class AddFacultyCreatedAtAndCourseChangeHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -789,7 +792,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 840, DateTimeKind.Local).AddTicks(4383),
                             Email = "faculty1@college.com",
                             FacultyNumber = "00001",
                             FullName = "Faculty 1",
@@ -801,7 +804,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9765),
                             Email = "faculty2@college.com",
                             FacultyNumber = "00002",
                             FullName = "Faculty 2",
@@ -813,7 +816,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9796),
                             Email = "faculty3@college.com",
                             FacultyNumber = "00003",
                             FullName = "Faculty 3",
@@ -825,7 +828,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9803),
                             Email = "faculty4@college.com",
                             FacultyNumber = "00004",
                             FullName = "Faculty 4",
@@ -837,7 +840,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9808),
                             Email = "faculty5@college.com",
                             FacultyNumber = "00005",
                             FullName = "Faculty 5",
@@ -849,7 +852,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9822),
                             Email = "faculty6@college.com",
                             FacultyNumber = "00006",
                             FullName = "Faculty 6",
@@ -861,7 +864,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9827),
                             Email = "faculty7@college.com",
                             FacultyNumber = "00007",
                             FullName = "Faculty 7",
@@ -873,7 +876,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9893),
                             Email = "faculty8@college.com",
                             FacultyNumber = "00008",
                             FullName = "Faculty 8",
@@ -885,7 +888,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9899),
                             Email = "faculty9@college.com",
                             FacultyNumber = "00009",
                             FullName = "Faculty 9",
@@ -897,7 +900,7 @@ namespace Global_College.mvc.Migrations
                         new
                         {
                             Id = 10,
-                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2026, 4, 9, 2, 43, 32, 845, DateTimeKind.Local).AddTicks(9905),
                             Email = "faculty10@college.com",
                             FacultyNumber = "00010",
                             FullName = "Faculty 10",

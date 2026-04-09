@@ -18,7 +18,6 @@ namespace Global_College.mvc.Controllers
             _context = context;
         }
 
-        // INDEX
         public async Task<IActionResult> Index()
         {
             var facultyProfiles = await _context.FacultyProfiles
@@ -30,17 +29,20 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfiles);
         }
 
-        // DETAILS
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
                 return NotFound();
 
             var facultyProfile = await _context.FacultyProfiles
-                .Include(f => f.FacultyCourseAssignments)
-                    .ThenInclude(fca => fca.BranchCourse)
-                        .ThenInclude(bc => bc.Course)
-                .FirstOrDefaultAsync(m => m.Id == id);
+    .Include(f => f.FacultyCourseAssignments)
+        .ThenInclude(fca => fca.BranchCourse)
+            .ThenInclude(bc => bc.Course)
+    .Include(f => f.FacultyCourseAssignments)
+        .ThenInclude(fca => fca.BranchCourse)
+            .ThenInclude(bc => bc.Branch)
+    .Include(f => f.ChangeHistories)
+    .FirstOrDefaultAsync(m => m.Id == id);
 
             if (facultyProfile == null)
                 return NotFound();
@@ -48,7 +50,6 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfile);
         }
 
-        // CREATE - GET
         public async Task<IActionResult> Create()
         {
             var model = new FacultyProfileCreateViewModel();
@@ -66,7 +67,6 @@ namespace Global_College.mvc.Controllers
             return View(model);
         }
 
-        // AJAX - load courses by selected branch
         [HttpGet]
         public async Task<JsonResult> GetCoursesByBranch(int branchId)
         {
@@ -76,21 +76,19 @@ namespace Global_College.mvc.Controllers
                 .Select(bc => new
                 {
                     id = bc.Id,
-                    name = bc.Course.Name
+                    name = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
                 })
                 .ToListAsync();
 
             return Json(courses);
         }
 
-        // CREATE - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(FacultyProfileCreateViewModel model)
         {
             await LoadCreateViewData(model.BranchId);
-
-            ValidateSelectedCourses(model.BranchId, model.SelectedBranchCourseIds);
+            await ValidateSelectedCoursesAsync(model.BranchId, model.SelectedBranchCourseIds);
 
             if (!ModelState.IsValid)
                 return View(model);
@@ -102,6 +100,7 @@ namespace Global_College.mvc.Controllers
                 FullName = model.FullName,
                 Email = model.Email,
                 Phone = model.Phone ?? "",
+                CreatedAt = DateTime.Now,
                 FacultyNumber = facultyNumber,
                 IdentityUserId = "faculty" + facultyNumber,
                 SystemEmail = $"{facultyNumber}@college.com",
@@ -124,7 +123,6 @@ namespace Global_College.mvc.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // EDIT - GET
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -163,7 +161,8 @@ namespace Global_College.mvc.Controllers
                 BranchId = selectedBranchId,
                 SelectedBranchCourseIds = selectedAssignments
                     .Select(a => a.BranchCourseId)
-                    .ToList()
+                    .ToList(),
+                ChangeJustification = ""
             };
 
             model.BranchOptions = await _context.Branches
@@ -175,19 +174,18 @@ namespace Global_College.mvc.Controllers
                 .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
-                .Include(bc => bc.Course)
-                .Where(bc => bc.BranchId == selectedBranchId)
-                .Select(bc => new SelectListItem
-                {
-                    Value = bc.Id.ToString(),
-                    Text = bc.Course.Name
-                })
-                .ToListAsync();
+     .Include(bc => bc.Course)
+     .Where(bc => bc.BranchId == selectedBranchId)
+     .Select(bc => new SelectListItem
+     {
+         Value = bc.Id.ToString(),
+         Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
+     })
+     .ToListAsync();
 
             return View(model);
         }
 
-        // EDIT - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, FacultyProfileEditViewModel model)
@@ -196,12 +194,12 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
 
             model.BranchOptions = await _context.Branches
-                .Select(b => new SelectListItem
-                {
-                    Value = b.Id.ToString(),
-                    Text = b.Name
-                })
-                .ToListAsync();
+            .Select(b => new SelectListItem
+            {
+             Value = b.Id.ToString(),
+                Text = b.Name
+            })
+            .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
                 .Include(bc => bc.Course)
@@ -209,14 +207,11 @@ namespace Global_College.mvc.Controllers
                 .Select(bc => new SelectListItem
                 {
                     Value = bc.Id.ToString(),
-                    Text = bc.Course.Name
+                    Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
                 })
                 .ToListAsync();
 
-            ValidateSelectedCourses(model.BranchId, model.SelectedBranchCourseIds);
-
-            if (!ModelState.IsValid)
-                return View(model);
+            await ValidateSelectedCoursesAsync(model.BranchId, model.SelectedBranchCourseIds);
 
             var faculty = await _context.FacultyProfiles
                 .Include(f => f.FacultyCourseAssignments)
@@ -225,12 +220,78 @@ namespace Global_College.mvc.Controllers
             if (faculty == null)
                 return NotFound();
 
+            var existingCourseIds = faculty.FacultyCourseAssignments
+                .Select(a => a.BranchCourseId)
+                .OrderBy(x => x)
+                .ToList();
+
+            var newCourseIds = model.SelectedBranchCourseIds
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            bool coursesChanged = !existingCourseIds.SequenceEqual(newCourseIds);
+
+            if (coursesChanged && string.IsNullOrWhiteSpace(model.ChangeJustification))
+            {
+                ModelState.AddModelError("ChangeJustification", "Justification is required when adding or removing courses.");
+            }
+
+            if (!ModelState.IsValid)
+                return View(model);
+
             faculty.FullName = model.FullName;
             faculty.Email = model.Email;
             faculty.Phone = model.Phone ?? "";
 
-            var existingAssignments = faculty.FacultyCourseAssignments.ToList();
-            _context.FacultyCourseAssignments.RemoveRange(existingAssignments);
+            var removedCourseIds = existingCourseIds.Except(newCourseIds).ToList();
+            var addedCourseIds = newCourseIds.Except(existingCourseIds).ToList();
+
+            foreach (var removedId in removedCourseIds)
+            {
+                var removedBranchCourse = await _context.BranchCourses
+                    .Include(bc => bc.Course)
+                    .Include(bc => bc.Branch)
+                    .FirstOrDefaultAsync(bc => bc.Id == removedId);
+
+                if (removedBranchCourse != null)
+                {
+                    _context.FacultyCourseAssignmentChangeHistories.Add(new FacultyCourseAssignmentChangeHistory
+                    {
+                        FacultyProfileId = faculty.Id,
+                        ActionType = "Removed",
+                        CourseName = removedBranchCourse.Course?.Name ?? "",
+                        BranchName = removedBranchCourse.Branch?.Name ?? "",
+                        CourseStartDate = removedBranchCourse.Course?.StartDate,
+                        Justification = model.ChangeJustification ?? "",
+                        ChangedAt = DateTime.Now
+                    });
+                }
+            }
+
+            foreach (var addedId in addedCourseIds)
+            {
+                var addedBranchCourse = await _context.BranchCourses
+                    .Include(bc => bc.Course)
+                    .Include(bc => bc.Branch)
+                    .FirstOrDefaultAsync(bc => bc.Id == addedId);
+
+                if (addedBranchCourse != null)
+                {
+                    _context.FacultyCourseAssignmentChangeHistories.Add(new FacultyCourseAssignmentChangeHistory
+                    {
+                        FacultyProfileId = faculty.Id,
+                        ActionType = "Added",
+                        CourseName = addedBranchCourse.Course?.Name ?? "",
+                        BranchName = addedBranchCourse.Branch?.Name ?? "",
+                        CourseStartDate = addedBranchCourse.Course?.StartDate,
+                        Justification = model.ChangeJustification ?? "",
+                        ChangedAt = DateTime.Now
+                    });
+                }
+            }
+
+            _context.FacultyCourseAssignments.RemoveRange(faculty.FacultyCourseAssignments);
 
             foreach (var branchCourseId in model.SelectedBranchCourseIds.Distinct())
             {
@@ -245,7 +306,6 @@ namespace Global_College.mvc.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // DELETE - GET
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -254,7 +314,7 @@ namespace Global_College.mvc.Controllers
             var facultyProfile = await _context.FacultyProfiles
                 .Include(f => f.FacultyCourseAssignments)
                     .ThenInclude(fca => fca.BranchCourse)
-                        .ThenInclude(bc => bc.Course)
+                     .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (facultyProfile == null)
@@ -263,7 +323,6 @@ namespace Global_College.mvc.Controllers
             return View(facultyProfile);
         }
 
-        // DELETE - POST
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -314,12 +373,12 @@ namespace Global_College.mvc.Controllers
                 .Select(bc => new SelectListItem
                 {
                     Value = bc.Id.ToString(),
-                    Text = bc.Course.Name
+                    Text = bc.Course.Name + " - Start: " + bc.Course.StartDate.ToString("yyyy-MM-dd")
                 })
                 .ToListAsync();
         }
 
-        private void ValidateSelectedCourses(int branchId, List<int> selectedBranchCourseIds)
+        private async Task ValidateSelectedCoursesAsync(int branchId, List<int> selectedBranchCourseIds)
         {
             if (selectedBranchCourseIds == null || !selectedBranchCourseIds.Any())
             {
@@ -329,9 +388,9 @@ namespace Global_College.mvc.Controllers
 
             var selectedIds = selectedBranchCourseIds.Distinct().ToList();
 
-            var selectedBranchCourses = _context.BranchCourses
+            var selectedBranchCourses = await _context.BranchCourses
                 .Where(bc => selectedIds.Contains(bc.Id))
-                .ToList();
+                .ToListAsync();
 
             if (selectedBranchCourses.Count != selectedIds.Count)
             {

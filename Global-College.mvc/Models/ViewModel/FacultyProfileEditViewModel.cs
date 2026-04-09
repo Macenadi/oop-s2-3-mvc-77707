@@ -8,7 +8,6 @@ namespace Global_College.mvc.Models.ViewModel
         public int Id { get; set; }
 
         public string IdentityUserId { get; set; } = string.Empty;
-
         public string SystemEmail { get; set; } = string.Empty;
         public string SystemPassword { get; set; } = string.Empty;
 
@@ -30,7 +29,10 @@ namespace Global_College.mvc.Models.ViewModel
         [Required(ErrorMessage = "Select at least one course.")]
         public List<int> SelectedBranchCourseIds { get; set; } = new();
 
+        public string? ChangeJustification { get; set; }
+
         public List<SelectListItem> BranchOptions { get; set; } = new();
         public List<SelectListItem> BranchCourseOptions { get; set; } = new();
+
     }
 }

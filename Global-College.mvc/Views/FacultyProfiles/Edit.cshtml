@@ -41,14 +41,45 @@
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="SelectedBranchCourseIds" class="control-label">Courses</label>
-                <select asp-for="SelectedBranchCourseIds"
-                        asp-items="Model.BranchCourseOptions"
-                        class="form-control"
-                        id="SelectedBranchCourseIds"
-                        multiple>
-                </select>
+                <label class="control-label">Courses</label>
+
+                <div class="mb-2">
+                    <select id="availableCourses" class="form-control">
+                        <option value="">-- Select course to add --</option>
+                        @foreach (var item in Model.BranchCourseOptions)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-success btn-sm mb-3" id="addCourseBtn">Add Course</button>
+
+                <div id="selectedCoursesContainer">
+                    @foreach (var courseId in Model.SelectedBranchCourseIds)
+                    {
+                        var selectedCourse = Model.BranchCourseOptions.FirstOrDefault(x => x.Value == courseId.ToString());
+                        if (selectedCourse != null)
+                        {
+                            <div class="card mb-2 p-2 selected-course-item" data-id="@selectedCourse.Value">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>@selectedCourse.Text</span>
+                                    <button type="button" class="btn btn-danger btn-sm remove-course-btn">Delete</button>
+                                </div>
+                                <input type="hidden" name="SelectedBranchCourseIds" value="@selectedCourse.Value" />
+                            </div>
+                        }
+                    }
+                </div>
+
                 <span asp-validation-for="SelectedBranchCourseIds" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3" id="justificationBox" style="display:none;">
+                <label asp-for="ChangeJustification" class="control-label">Justification</label>
+                <textarea asp-for="ChangeJustification" class="form-control" rows="4"
+                          placeholder="Explain why you added, removed, or changed the course(s)."></textarea>
+                <span asp-validation-for="ChangeJustification" class="text-danger"></span>
             </div>
 
             <div class="form-group mt-3">
@@ -66,8 +97,8 @@
 
     <script>
         document.getElementById("BranchId").addEventListener("change", function () {
-            var branchId = this.value;
-            var courseSelect = document.getElementById("SelectedBranchCourseIds");
+            const branchId = this.value;
+            const courseSelect = document.getElementById("SelectedBranchCourseIds");
 
             courseSelect.innerHTML = "";
 
@@ -76,12 +107,64 @@
                     .then(response => response.json())
                     .then(data => {
                         data.forEach(course => {
-                            var option = document.createElement("option");
+                            const option = document.createElement("option");
                             option.value = course.id;
                             option.text = course.name;
                             courseSelect.appendChild(option);
                         });
                     });
+            }
+        });
+    </script>
+
+    <script>
+        function showJustificationBox() {
+            document.getElementById("justificationBox").style.display = "block";
+        }
+
+                window.addEventListener("load", function () {
+            const justification = document.getElementById("ChangeJustification");
+            if (justification && justification.value.trim() !== "") {
+                showJustificationBox();
+            }
+
+            const validationMessage = document.querySelector('[data-valmsg-for="ChangeJustification"]');
+            if (validationMessage && validationMessage.textContent.trim() !== "") {
+                showJustificationBox();
+            }
+        });
+
+        document.getElementById("addCourseBtn").addEventListener("click", function () {
+            const select = document.getElementById("availableCourses");
+            const selectedValue = select.value;
+            const selectedText = select.options[select.selectedIndex].text;
+            const container = document.getElementById("selectedCoursesContainer");
+
+            if (!selectedValue) return;
+
+            const alreadyExists = container.querySelector('[data-id="' + selectedValue + '"]');
+            if (alreadyExists) return;
+
+            const card = document.createElement("div");
+            card.className = "card mb-2 p-2 selected-course-item";
+            card.setAttribute("data-id", selectedValue);
+
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>${selectedText}</span>
+                    <button type="button" class="btn btn-danger btn-sm remove-course-btn">Delete</button>
+                </div>
+                <input type="hidden" name="SelectedBranchCourseIds" value="${selectedValue}" />
+            `;
+
+            container.appendChild(card);
+            showJustificationBox();
+        });
+
+        document.addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-course-btn")) {
+                e.target.closest(".selected-course-item").remove();
+                showJustificationBox();
             }
         });
     </script>
