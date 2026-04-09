@@ -7,11 +7,12 @@ namespace Global_College.mvc.ViewModels
     public class AttendanceIndexViewModel
     {
         public int? BranchId { get; set; }
-        public int? CourseId { get; set; }
+        public int? BranchCourseId { get; set; }
         public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
         public List<SelectListItem> Branches { get; set; } = new();
-        public List<SelectListItem> Courses { get; set; } = new();
+        public List<SelectListItem> BranchCourses { get; set; } = new();
+
         public List<AttendanceStudentItemViewModel> Students { get; set; } = new();
     }
 
@@ -23,5 +24,7 @@ namespace Global_College.mvc.ViewModels
         public string FullName { get; set; } = string.Empty;
         public bool Present { get; set; }
         public int? AttendanceRecordId { get; set; }
+
+        public string? ChangeJustification { get; set; }
     }
 }

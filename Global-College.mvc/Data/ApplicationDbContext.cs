@@ -61,9 +61,9 @@ namespace Global_College.mvc.Data
                 .HasForeignKey(bc => bc.CourseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Unique Branch + Course
+            // Unique ClassCode
             builder.Entity<BranchCourse>()
-                .HasIndex(bc => new { bc.BranchId, bc.CourseId })
+                .HasIndex(bc => bc.ClassCode)
                 .IsUnique();
 
             // CourseEnrolment -> BranchCourse
@@ -85,7 +85,7 @@ namespace Global_College.mvc.Data
                 .HasIndex(ce => new { ce.StudentProfileId, ce.BranchCourseId })
                 .IsUnique();
 
-            // NOVO: CourseEnrolmentChangeHistory -> CourseEnrolment
+            // CourseEnrolmentChangeHistory -> CourseEnrolment
             builder.Entity<CourseEnrolmentChangeHistory>()
                 .HasOne(h => h.CourseEnrolment)
                 .WithMany(e => e.ChangeHistories)
@@ -112,10 +112,10 @@ namespace Global_College.mvc.Data
                 .IsUnique();
 
             builder.Entity<FacultyCourseAssignmentChangeHistory>()
-    .HasOne(h => h.FacultyProfile)
-    .WithMany(f => f.ChangeHistories)
-    .HasForeignKey(h => h.FacultyProfileId)
-    .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(h => h.FacultyProfile)
+                .WithMany(f => f.ChangeHistories)
+                .HasForeignKey(h => h.FacultyProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // =========================
             // SEED DATA

@@ -24,56 +24,20 @@ namespace Global_College.mvc.Migrations
                 table: "BranchCourses",
                 type: "date",
                 nullable: false,
-                defaultValue: new DateOnly(1, 1, 1));
+                defaultValue: new DateOnly(2026, 12, 31));
 
             migrationBuilder.AddColumn<DateOnly>(
                 name: "StartDate",
                 table: "BranchCourses",
                 type: "date",
                 nullable: false,
-                defaultValue: new DateOnly(1, 1, 1));
+                defaultValue: new DateOnly(2026, 1, 1));
 
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
-
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 2,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
-
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 3,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
-
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 4,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
-
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 5,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
-
-            migrationBuilder.UpdateData(
-                table: "BranchCourses",
-                keyColumn: "Id",
-                keyValue: 6,
-                columns: new[] { "ClassCode", "EndDate", "StartDate" },
-                values: new object[] { "", new DateOnly(1, 1, 1), new DateOnly(1, 1, 1) });
+            migrationBuilder.Sql(@"
+        UPDATE BranchCourses
+        SET ClassCode = CONCAT('TEMP-', Id)
+        WHERE ClassCode IS NULL OR LTRIM(RTRIM(ClassCode)) = ''
+    ");
         }
 
         /// <inheritdoc />

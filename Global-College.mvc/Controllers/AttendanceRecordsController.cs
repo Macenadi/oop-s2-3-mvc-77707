@@ -23,36 +23,40 @@ namespace Global_College.mvc.Controllers
         }
 
         // GET: AttendanceRecords
-        public async Task<IActionResult> Index(int? branchId, int? courseId, DateOnly? date)
+        public async Task<IActionResult> Index(int? branchId, int? branchCourseId, DateOnly? date)
         {
             var model = new AttendanceIndexViewModel
             {
                 BranchId = branchId,
-                CourseId = courseId,
+                BranchCourseId = branchCourseId,
                 Date = date ?? DateOnly.FromDateTime(DateTime.Today)
             };
 
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            if (model.Date > today)
+            {
+                model.Date = today;
+                ModelState.AddModelError("Date", "Future dates are not allowed for attendance.");
+            }
+
             await LoadFilters(model);
 
-            if (branchId.HasValue && courseId.HasValue)
+            if (model.BranchCourseId.HasValue)
             {
                 var enrolments = await _context.CourseEnrolments
                     .Include(ce => ce.StudentProfile)
                     .Include(ce => ce.BranchCourse)
-                        .ThenInclude(bc => bc.Branch)
-                    .Include(ce => ce.BranchCourse)
                         .ThenInclude(bc => bc.Course)
-                    .Where(ce =>
-                        ce.BranchCourse.BranchId == branchId.Value &&
-                        ce.BranchCourse.CourseId == courseId.Value &&
-                        ce.Status == "Enrolled")
+                    .Include(ce => ce.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
+                    .Where(ce => ce.BranchCourseId == model.BranchCourseId.Value
+                                 && ce.Status == "Enrolled")
                     .OrderBy(ce => ce.StudentProfile.FullName)
                     .ToListAsync();
 
-                var selectedDate = model.Date;
-
                 var attendanceRecords = await _context.AttendanceRecords
-                    .Where(a => a.Date == selectedDate)
+                    .Where(a => a.Date == model.Date)
                     .ToListAsync();
 
                 model.Students = enrolments.Select(ce =>
@@ -80,19 +84,50 @@ namespace Global_College.mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAttendance(AttendanceIndexViewModel model)
         {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            if (model.Date > today)
+            {
+                ModelState.AddModelError("Date", "Future dates are not allowed for attendance.");
+            }
+
             if (!model.BranchId.HasValue)
             {
                 ModelState.AddModelError("BranchId", "Please select a branch.");
             }
 
-            if (!model.CourseId.HasValue)
+            if (!model.BranchCourseId.HasValue)
             {
-                ModelState.AddModelError("CourseId", "Please select a course.");
+                ModelState.AddModelError("BranchCourseId", "Please select a class/group.");
             }
 
             if (model.Students == null || !model.Students.Any())
             {
-                ModelState.AddModelError("", "No students found for the selected branch and course.");
+                ModelState.AddModelError("", "No students found for the selected class/group.");
+            }
+
+            var selectedDate = model.Date;
+
+            var courseEnrolmentIds = model.Students?
+                .Select(s => s.CourseEnrolmentId)
+                .ToList() ?? new List<int>();
+
+            var existingAttendanceRecords = await _context.AttendanceRecords
+                .Where(a => courseEnrolmentIds.Contains(a.CourseEnrolmentId) && a.Date == selectedDate)
+                .ToListAsync();
+
+            foreach (var student in model.Students ?? new List<AttendanceStudentItemViewModel>())
+            {
+                var existingRecord = existingAttendanceRecords
+                    .FirstOrDefault(a => a.CourseEnrolmentId == student.CourseEnrolmentId);
+
+                if (existingRecord != null && existingRecord.Present != student.Present)
+                {
+                    if (string.IsNullOrWhiteSpace(student.ChangeJustification))
+                    {
+                        ModelState.AddModelError("", $"Justification is required to change attendance for {student.FullName}.");
+                    }
+                }
             }
 
             if (!ModelState.IsValid)
@@ -100,16 +135,6 @@ namespace Global_College.mvc.Controllers
                 await LoadFilters(model);
                 return View("Index", model);
             }
-
-            var selectedDate = model.Date;
-
-            var courseEnrolmentIds = model.Students
-                .Select(s => s.CourseEnrolmentId)
-                .ToList();
-
-            var existingAttendanceRecords = await _context.AttendanceRecords
-                .Where(a => courseEnrolmentIds.Contains(a.CourseEnrolmentId) && a.Date == selectedDate)
-                .ToListAsync();
 
             foreach (var student in model.Students)
             {
@@ -122,15 +147,20 @@ namespace Global_College.mvc.Controllers
                     {
                         CourseEnrolmentId = student.CourseEnrolmentId,
                         Date = selectedDate,
-                        Present = student.Present
+                        Present = student.Present,
+                        ChangeJustification = null
                     };
 
                     _context.AttendanceRecords.Add(newRecord);
                 }
                 else
                 {
-                    existingRecord.Present = student.Present;
-                    _context.AttendanceRecords.Update(existingRecord);
+                    if (existingRecord.Present != student.Present)
+                    {
+                        existingRecord.Present = student.Present;
+                        existingRecord.ChangeJustification = student.ChangeJustification;
+                        _context.AttendanceRecords.Update(existingRecord);
+                    }
                 }
             }
 
@@ -141,7 +171,7 @@ namespace Global_College.mvc.Controllers
             return RedirectToAction(nameof(Index), new
             {
                 branchId = model.BranchId,
-                courseId = model.CourseId,
+                branchCourseId = model.BranchCourseId,
                 date = model.Date.ToString("yyyy-MM-dd")
             });
         }
@@ -177,25 +207,30 @@ namespace Global_College.mvc.Controllers
         {
             model.Branches = await _context.Branches
                 .OrderBy(b => b.Name)
+                .ThenBy(b => b.Address)
                 .Select(b => new SelectListItem
                 {
                     Value = b.Id.ToString(),
-                    Text = b.Name
+                    Text = b.Name + " - " + b.Address
                 })
                 .ToListAsync();
 
-            model.Courses = new List<SelectListItem>();
+            model.BranchCourses = new List<SelectListItem>();
 
             if (model.BranchId.HasValue)
             {
-                model.Courses = await _context.BranchCourses
+                model.BranchCourses = await _context.BranchCourses
                     .Where(bc => bc.BranchId == model.BranchId.Value)
                     .Include(bc => bc.Course)
                     .OrderBy(bc => bc.Course.Name)
+                    .ThenBy(bc => bc.StartDate)
                     .Select(bc => new SelectListItem
                     {
-                        Value = bc.CourseId.ToString(),
-                        Text = bc.Course.Name
+                        Value = bc.Id.ToString(),
+                        Text = bc.Course.Name + " | " +
+                               bc.ClassCode + " | " +
+                               bc.StartDate.ToString("dd/MM/yyyy") + " - " +
+                               bc.EndDate.ToString("dd/MM/yyyy")
                     })
                     .ToListAsync();
             }
