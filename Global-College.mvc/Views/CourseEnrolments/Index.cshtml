@@ -6,6 +6,41 @@
 
 <h1>Index</h1>
 
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <input type="text" name="studentNumber" value="@ViewBag.StudentNumber" class="form-control" placeholder="Student Number" />
+        </div>
+
+        <div class="col-md-3">
+            <input type="text" name="classCode" value="@ViewBag.ClassCode" class="form-control" placeholder="Class Code" />
+        </div>
+
+        <div class="col-md-3">
+            <input type="text" name="facultyNumber" value="@ViewBag.FacultyNumber" class="form-control" placeholder="Faculty Number" />
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-3">
+            <select name="branchId" class="form-control" asp-items="ViewBag.Branches">
+                <option value="">Branch</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select name="courseId" class="form-control" asp-items="ViewBag.Courses">
+                <option value="">Course</option>
+            </select>
+        </div>
+
+        <div class="col-md-6">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -14,8 +49,10 @@
     <thead>
         <tr>
             <th>Student</th>
+            <th>Student Number</th>
             <th>Branch</th>
             <th>Course</th>
+            <th>Class Code</th>
             <th>Status</th>
             <th>Enrol Date</th>
             <th></th>
@@ -26,8 +63,10 @@
         {
             <tr>
                 <td>@item.StudentProfile!.FullName</td>
+                <td>@item.StudentProfile!.StudentNumber</td> <!-- NOVO -->
                 <td>@item.BranchCourse!.Branch!.Name</td>
                 <td>@item.BranchCourse!.Course!.Name</td>
+                <td>@item.BranchCourse!.ClassCode</td>       <!-- NOVO -->
                 <td>@item.Status</td>
                 <td>@item.EnrolDate</td>
                 <td>

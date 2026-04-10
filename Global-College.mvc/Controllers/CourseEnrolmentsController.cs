@@ -18,16 +18,80 @@ namespace Global_College.mvc.Controllers
         }
 
         // GET: CourseEnrolments
-        public async Task<IActionResult> Index()
+        // GET: CourseEnrolments
+        public async Task<IActionResult> Index(
+            string? studentNumber,
+            string? classCode,
+            int? branchId,
+            int? courseId,
+            string? facultyNumber)
         {
-            var applicationDbContext = _context.CourseEnrolments
+            var query = _context.CourseEnrolments
                 .Include(c => c.StudentProfile)
                 .Include(c => c.BranchCourse)
                     .ThenInclude(bc => bc.Branch)
                 .Include(c => c.BranchCourse)
-                    .ThenInclude(bc => bc.Course);
+                    .ThenInclude(bc => bc.Course)
+                .AsQueryable();
 
-            return View(await applicationDbContext.ToListAsync());
+            if (!string.IsNullOrWhiteSpace(studentNumber))
+            {
+                query = query.Where(c =>
+                    c.StudentProfile != null &&
+                    c.StudentProfile.StudentNumber != null &&
+                    c.StudentProfile.StudentNumber.Contains(studentNumber));
+            }
+
+            if (!string.IsNullOrWhiteSpace(classCode))
+            {
+                query = query.Where(c =>
+                    c.BranchCourse != null &&
+                    c.BranchCourse.ClassCode != null &&
+                    c.BranchCourse.ClassCode.Contains(classCode));
+            }
+
+            if (branchId.HasValue)
+            {
+                query = query.Where(c =>
+                    c.BranchCourse != null &&
+                    c.BranchCourse.BranchId == branchId.Value);
+            }
+
+            if (courseId.HasValue)
+            {
+                query = query.Where(c =>
+                    c.BranchCourse != null &&
+                    c.BranchCourse.CourseId == courseId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(facultyNumber))
+            {
+                query = query.Where(c => _context.FacultyCourseAssignments.Any(fa =>
+                    fa.BranchCourseId == c.BranchCourseId &&
+                    fa.FacultyProfile != null &&
+                    fa.FacultyProfile.FacultyNumber != null &&
+                    fa.FacultyProfile.FacultyNumber.Contains(facultyNumber)));
+            }
+
+            ViewBag.Branches = new SelectList(
+                await _context.Branches.ToListAsync(),
+                "Id",
+                "Name",
+                branchId
+            );
+
+            ViewBag.Courses = new SelectList(
+                await _context.Courses.ToListAsync(),
+                "Id",
+                "Name",
+                courseId
+            );
+
+            ViewBag.StudentNumber = studentNumber;
+            ViewBag.ClassCode = classCode;
+            ViewBag.FacultyNumber = facultyNumber;
+
+            return View(await query.ToListAsync());
         }
 
         // GET: CourseEnrolments/Details/5
