@@ -44,9 +44,10 @@ namespace Global_College.mvc.Controllers
             }
 
             var branchCourse = await _context.BranchCourses
-                .Include(bc => bc.Branch)
-                .Include(bc => bc.Course)
-                .FirstOrDefaultAsync(m => m.Id == id);
+    .Include(bc => bc.Branch)
+    .Include(bc => bc.Course)
+    .Include(bc => bc.CourseEnrolments)
+    .FirstOrDefaultAsync(m => m.Id == id);
 
             if (branchCourse == null)
             {
@@ -54,11 +55,12 @@ namespace Global_College.mvc.Controllers
             }
 
             var relatedBranchCourses = await _context.BranchCourses
-                .Include(bc => bc.Course)
-                .Where(bc => bc.BranchId == branchCourse.BranchId)
-                .OrderBy(bc => bc.Course.Name)
-                .ThenBy(bc => bc.StartDate)
-                .ToListAsync();
+    .Include(bc => bc.Course)
+    .Include(bc => bc.CourseEnrolments)
+    .Where(bc => bc.BranchId == branchCourse.BranchId)
+    .OrderBy(bc => bc.Course.Name)
+    .ThenBy(bc => bc.StartDate)
+    .ToListAsync();
 
             var viewModel = new BranchCourseDetailsViewModel
             {

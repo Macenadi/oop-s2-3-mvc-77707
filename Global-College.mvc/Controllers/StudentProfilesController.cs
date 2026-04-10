@@ -405,7 +405,7 @@ namespace Global_College.mvc.Controllers
             {
                 new SelectListItem { Value = "Enrolled", Text = "Enrolled", Selected = model.Status == "Enrolled" },
                 new SelectListItem { Value = "Finished", Text = "Finished", Selected = model.Status == "Finished" },
-                new SelectListItem { Value = "Trancou a matricula", Text = "Trancou a matricula", Selected = model.Status == "Trancou a matricula" }
+                new SelectListItem { Value = "Dropped", Text = "Dropped", Selected = model.Status == "Dropped" }
             };
         }
 
