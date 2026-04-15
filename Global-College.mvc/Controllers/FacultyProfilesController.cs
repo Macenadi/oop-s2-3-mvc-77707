@@ -196,7 +196,7 @@ namespace Global_College.mvc.Controllers
             model.BranchOptions = await _context.Branches
             .Select(b => new SelectListItem
             {
-             Value = b.Id.ToString(),
+                Value = b.Id.ToString(),
                 Text = b.Name
             })
             .ToListAsync();

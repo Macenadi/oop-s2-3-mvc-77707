@@ -1,4 +1,4 @@
-﻿@model Global_College.domain.Models.Administrator.FacultyProfile
+﻿@model Global_College.domain.Models.Administrator.FacultyCourseAssignment
 
 @{
     ViewData["Title"] = "Details";
@@ -7,59 +7,49 @@
 <h1>Details</h1>
 
 <div>
-    <h4>Faculty Profile</h4>
+    <h4>Faculty Course Assignment</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">Full Name</dt>
-        <dd class="col-sm-10">@Model.FullName</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.FullName</dd>
 
         <dt class="col-sm-2">Personal Email</dt>
-        <dd class="col-sm-10">@Model.Email</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.Email</dd>
 
         <dt class="col-sm-2">Phone</dt>
-        <dd class="col-sm-10">@Model.Phone</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.Phone</dd>
 
         <dt class="col-sm-2">Identity User ID</dt>
-        <dd class="col-sm-10">@Model.IdentityUserId</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.IdentityUserId</dd>
 
         <dt class="col-sm-2">System Email</dt>
-        <dd class="col-sm-10">@Model.SystemEmail</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.SystemEmail</dd>
 
         <dt class="col-sm-2">System Password</dt>
-        <dd class="col-sm-10">@Model.SystemPassword</dd>
+        <dd class="col-sm-10">@Model.FacultyProfile?.SystemPassword</dd>
     </dl>
 </div>
 
 <div class="mt-4">
-    <h4>Assigned Courses</h4>
+    <h4>Assigned Course</h4>
     <hr />
 
-    @if (Model.FacultyCourseAssignments != null && Model.FacultyCourseAssignments.Any())
-    {
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>City / Branch</th>
-                    <th>Course</th>
-                    <th>Created At</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var assignment in Model.FacultyCourseAssignments)
-                {
-                    <tr>
-                        <td>@assignment.BranchCourse?.Branch?.Name</td>
-                        <td>@assignment.BranchCourse?.Course?.Name</td>
-                        <td>@assignment.BranchCourse?.Course?.CreatedAt.ToString("dd/MM/yyyy")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p>No assigned courses.</p>
-    }
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>City / Branch</th>
+                <th>Course</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Model.BranchCourse?.Branch?.Name</td>
+                <td>@Model.BranchCourse?.Course?.Name</td>
+                <td>@Model.BranchCourse?.Course?.CreatedAt.ToString("dd/MM/yyyy")</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 <div>
