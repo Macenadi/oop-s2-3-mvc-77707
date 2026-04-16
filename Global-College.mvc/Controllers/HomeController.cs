@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Global_College.mvc.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -17,7 +17,22 @@ namespace Global_College.mvc.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            if (User.IsInRole("Student"))
+            {
+                return RedirectToAction("MyProfile", "StudentPortal");
+            }
+
+            if (User.IsInRole("Faculty"))
+            {
+                return RedirectToAction("Index", "Assignments");
+            }
+
+            if (User.IsInRole("Administrator"))
+            {
+                return View();
+            }
+
+            return RedirectToAction("Privacy");
         }
 
         public IActionResult Privacy()
@@ -28,7 +43,10 @@ namespace Global_College.mvc.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }
