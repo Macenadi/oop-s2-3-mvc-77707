@@ -82,8 +82,7 @@ namespace Global_College.mvc.Controllers
                 ModelState.AddModelError("BranchCourseId", "Invalid course.");
                 LoadBranchCoursesDropDown(model.BranchCourseId);
                 return View(model);
-            };
-
+            }
 
             if (!ModelState.IsValid)
             {
@@ -91,14 +90,47 @@ namespace Global_College.mvc.Controllers
                 return View(model);
             }
 
-            // 🔥 GERAR STUDENT NUMBER
+            // GERAR STUDENT NUMBER
             string studentNumber = await GenerateStudentNumber();
 
-            // 🔥 GERAR EMAIL DO SISTEMA
+            // GERAR EMAIL DO SISTEMA
             string systemEmail = $"{studentNumber}@college.com";
 
-            // 🔥 GERAR SENHA
+            // GERAR SENHA
             string systemPassword = GeneratePassword();
+
+            var identityUser = new IdentityUser
+            {
+                UserName = systemEmail,
+                Email = systemEmail,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _userManager.CreateAsync(identityUser, systemPassword);
+
+            if (!createResult.Succeeded)
+            {
+                foreach (var error in createResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                LoadBranchCoursesDropDown(model.BranchCourseId);
+                return View(model);
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(identityUser, "Student");
+
+            if (!roleResult.Succeeded)
+            {
+                foreach (var error in roleResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                LoadBranchCoursesDropDown(model.BranchCourseId);
+                return View(model);
+            }
 
             var student = new StudentProfile
             {
@@ -107,8 +139,7 @@ namespace Global_College.mvc.Controllers
                 Phone = model.Phone ?? "",
                 Address = model.Address,
                 StudentNumber = studentNumber,
-                IdentityUserId = "student" + studentNumber,
-
+                IdentityUserId = identityUser.Id,
                 SystemEmail = systemEmail,
                 SystemPassword = systemPassword
             };
@@ -375,12 +406,12 @@ namespace Global_College.mvc.Controllers
                 .Include(bc => bc.Branch)
                 .Include(bc => bc.Course)
                 .OrderBy(bc => bc.Branch.Name)
-.ThenBy(bc => bc.Course.Name)
-.Select(bc => new
-{
-    bc.Id,
-    DisplayName = bc.Branch.Name + " - " + bc.Course.Name
-})
+                .ThenBy(bc => bc.Course.Name)
+                .Select(bc => new
+                {
+                    bc.Id,
+                    DisplayName = bc.Branch.Name + " - " + bc.Course.Name
+                })
                 .ToList();
 
             ViewData["BranchCourseId"] = new SelectList(branchCourses, "Id", "DisplayName", selectedBranchCourseId);
@@ -392,13 +423,13 @@ namespace Global_College.mvc.Controllers
                 .Include(bc => bc.Branch)
                 .Include(bc => bc.Course)
                 .OrderBy(bc => bc.Branch.Name)
-.ThenBy(bc => bc.Course.Name)
-.Select(bc => new SelectListItem
-{
-    Value = bc.Id.ToString(),
-    Text = bc.Branch.Name + " - " + bc.Course.Name,
-    Selected = model.BranchCourseId == bc.Id
-})
+                .ThenBy(bc => bc.Course.Name)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Branch.Name + " - " + bc.Course.Name,
+                    Selected = model.BranchCourseId == bc.Id
+                })
                 .ToListAsync();
 
             model.StatusOptions = new List<SelectListItem>
@@ -409,16 +440,12 @@ namespace Global_College.mvc.Controllers
             };
         }
 
-            private string GeneratePassword()
-            {
-            var rnd = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        private string GeneratePassword()
+        {
+            return $"Stu@{Random.Shared.Next(100000, 999999)}a";
+        }
 
-            return new string(Enumerable.Repeat(chars, 8)
-                .Select(s => s[rnd.Next(s.Length)]).ToArray());
-            }
-
-            private async Task<string> GenerateStudentNumber()
+        private async Task<string> GenerateStudentNumber()
         {
             var rnd = new Random();
             string number;
@@ -433,9 +460,3 @@ namespace Global_College.mvc.Controllers
         }
     }
 }
-
-
-
-
-
-//me de o conteolelr atualizado sem a parte do email profissional, pois ainda nao vou fazer ეს ახლა. So o resto atualizado

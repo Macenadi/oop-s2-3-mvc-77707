@@ -2,6 +2,7 @@
 using Global_College.mvc.Data;
 using Global_College.mvc.Models.ViewModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,14 @@ namespace Global_College.mvc.Controllers
     public class FacultyProfilesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public FacultyProfilesController(ApplicationDbContext context)
+        public FacultyProfilesController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index()
@@ -35,14 +40,14 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
 
             var facultyProfile = await _context.FacultyProfiles
-    .Include(f => f.FacultyCourseAssignments)
-        .ThenInclude(fca => fca.BranchCourse)
-            .ThenInclude(bc => bc.Course)
-    .Include(f => f.FacultyCourseAssignments)
-        .ThenInclude(fca => fca.BranchCourse)
-            .ThenInclude(bc => bc.Branch)
-    .Include(f => f.ChangeHistories)
-    .FirstOrDefaultAsync(m => m.Id == id);
+                .Include(f => f.FacultyCourseAssignments)
+                    .ThenInclude(fca => fca.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
+                .Include(f => f.FacultyCourseAssignments)
+                    .ThenInclude(fca => fca.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
+                .Include(f => f.ChangeHistories)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (facultyProfile == null)
                 return NotFound();
@@ -94,6 +99,39 @@ namespace Global_College.mvc.Controllers
                 return View(model);
 
             string facultyNumber = await GenerateUniqueFacultyNumberAsync();
+            string systemEmail = $"{facultyNumber}@college.com";
+            string systemPassword = GeneratePassword();
+
+            var identityUser = new IdentityUser
+            {
+                UserName = systemEmail,
+                Email = systemEmail,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _userManager.CreateAsync(identityUser, systemPassword);
+
+            if (!createResult.Succeeded)
+            {
+                foreach (var error in createResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                return View(model);
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(identityUser, "Faculty");
+
+            if (!roleResult.Succeeded)
+            {
+                foreach (var error in roleResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                return View(model);
+            }
 
             var faculty = new FacultyProfile
             {
@@ -102,9 +140,9 @@ namespace Global_College.mvc.Controllers
                 Phone = model.Phone ?? "",
                 CreatedAt = DateTime.Now,
                 FacultyNumber = facultyNumber,
-                IdentityUserId = "faculty" + facultyNumber,
-                SystemEmail = $"{facultyNumber}@college.com",
-                SystemPassword = $"{facultyNumber}@college.com"
+                IdentityUserId = identityUser.Id,
+                SystemEmail = systemEmail,
+                SystemPassword = systemPassword
             };
 
             _context.FacultyProfiles.Add(faculty);
@@ -120,6 +158,10 @@ namespace Global_College.mvc.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                $"Faculty created! Login: {systemEmail} | Password: {systemPassword}";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -174,14 +216,14 @@ namespace Global_College.mvc.Controllers
                 .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
-    .Include(bc => bc.Course)
-    .Where(bc => bc.BranchId == selectedBranchId)
-    .Select(bc => new SelectListItem
-    {
-        Value = bc.Id.ToString(),
-        Text = bc.Course.Name
-    })
-    .ToListAsync();
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == selectedBranchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
 
             return View(model);
         }
@@ -194,22 +236,22 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
 
             model.BranchOptions = await _context.Branches
-            .Select(b => new SelectListItem
-            {
-                Value = b.Id.ToString(),
-                Text = b.Name
-            })
-            .ToListAsync();
+                .Select(b => new SelectListItem
+                {
+                    Value = b.Id.ToString(),
+                    Text = b.Name
+                })
+                .ToListAsync();
 
             model.BranchCourseOptions = await _context.BranchCourses
-    .Include(bc => bc.Course)
-    .Where(bc => bc.BranchId == model.BranchId)
-    .Select(bc => new SelectListItem
-    {
-        Value = bc.Id.ToString(),
-        Text = bc.Course.Name
-    })
-    .ToListAsync();
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == model.BranchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
 
             await ValidateSelectedCoursesAsync(model.BranchId, model.SelectedBranchCourseIds);
 
@@ -314,7 +356,7 @@ namespace Global_College.mvc.Controllers
             var facultyProfile = await _context.FacultyProfiles
                 .Include(f => f.FacultyCourseAssignments)
                     .ThenInclude(fca => fca.BranchCourse)
-                     .ThenInclude(bc => bc.Course)
+                        .ThenInclude(bc => bc.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (facultyProfile == null)
@@ -357,6 +399,11 @@ namespace Global_College.mvc.Controllers
             return facultyNumber;
         }
 
+        private string GeneratePassword()
+        {
+            return $"Fac@{Random.Shared.Next(100000, 999999)}a";
+        }
+
         private async Task LoadCreateViewData(int branchId)
         {
             ViewBag.BranchOptions = await _context.Branches
@@ -368,14 +415,14 @@ namespace Global_College.mvc.Controllers
                 .ToListAsync();
 
             ViewBag.BranchCourseOptions = await _context.BranchCourses
-    .Include(bc => bc.Course)
-    .Where(bc => bc.BranchId == branchId)
-    .Select(bc => new SelectListItem
-    {
-        Value = bc.Id.ToString(),
-        Text = bc.Course.Name
-    })
-    .ToListAsync();
+                .Include(bc => bc.Course)
+                .Where(bc => bc.BranchId == branchId)
+                .Select(bc => new SelectListItem
+                {
+                    Value = bc.Id.ToString(),
+                    Text = bc.Course.Name
+                })
+                .ToListAsync();
         }
 
         private async Task ValidateSelectedCoursesAsync(int branchId, List<int> selectedBranchCourseIds)
