@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Global_College.mvc.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Administrator,Faculty")]
     public class StudentProfilesController : Controller
     {
         private readonly ApplicationDbContext _context;

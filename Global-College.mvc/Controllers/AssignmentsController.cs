@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Global_College.mvc.Controllers
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Administrator,Faculty")]
     public class AssignmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
