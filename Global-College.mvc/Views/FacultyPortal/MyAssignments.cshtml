@@ -1,0 +1,69 @@
+﻿@model Global_College.mvc.Models.ViewModel.FacultyMyAssignmentsViewModel
+
+@{
+    ViewData["Title"] = "My Assignments";
+}
+
+<h1>My Assignments</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@Model.Header.FacultyName</h4>
+        <p><strong>Faculty Number:</strong> @Model.Header.FacultyNumber</p>
+        <p><strong>System Email:</strong> @Model.Header.SystemEmail</p>
+        <p><strong>Assigned Classes:</strong> @Model.Header.AssignedClassesCount</p>
+    </div>
+</div>
+
+<div class="mb-4">
+    <a asp-controller="FacultyPortal" asp-action="MyClasses" class="btn btn-outline-primary me-2 mb-2">My Classes</a>
+    <a asp-controller="FacultyPortal" asp-action="MyAssignments" class="btn btn-primary me-2 mb-2">My Assignments</a>
+    <a asp-controller="FacultyPortal" asp-action="MyAttendance" class="btn btn-outline-primary me-2 mb-2">My Attendance</a>
+    <a asp-controller="FacultyPortal" asp-action="MyExamResults" class="btn btn-outline-primary me-2 mb-2">My Exam Results</a>
+</div>
+
+<div class="mb-3">
+    <a asp-controller="Assignments" asp-action="Create" class="btn btn-success">Create Assignment</a>
+</div>
+
+@if (!Model.Items.Any())
+{
+    <div class="alert alert-info">
+        No assignments found.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Course</th>
+                <th>Branch</th>
+                <th>Class Code</th>
+                <th>Due Date</th>
+                <th>Max Score</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.CourseName</td>
+                    <td>@item.BranchName</td>
+                    <td>@item.ClassCode</td>
+                    <td>@item.DueDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.MaxScore</td>
+                    <td>
+                        <a asp-controller="Assignments" asp-action="Details" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-info mb-1">Details</a>
+                        <a asp-controller="Assignments" asp-action="Edit" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-warning mb-1">Edit</a>
+                        <a asp-controller="Assignments" asp-action="Delete" asp-route-id="@item.AssignmentId" class="btn btn-sm btn-outline-danger mb-1">Delete</a>
+                        <a asp-controller="AssignmentResults" asp-action="Index" asp-route-assignmentId="@item.AssignmentId" class="btn btn-sm btn-outline-primary mb-1">Results</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

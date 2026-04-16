@@ -40,6 +40,11 @@
     <div class="mt-3">
         <button type="submit" class="btn btn-primary">Load Students</button>
     </div>
+
+    <div class="mb-4">
+        <a asp-controller="FacultyPortal" asp-action="MyClasses" class="btn btn-outline-primary me-2 mb-2">My Classes</a>
+    </div>
+
 </form>
 
 @if (Model.Students != null && Model.Students.Any())

@@ -24,7 +24,7 @@ namespace Global_College.mvc.Controllers
 
             if (User.IsInRole("Faculty"))
             {
-                return RedirectToAction("Index", "Assignments");
+                return RedirectToAction("MyClasses", "FacultyPortal");
             }
 
             if (User.IsInRole("Administrator"))
