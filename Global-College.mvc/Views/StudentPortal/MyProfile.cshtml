@@ -1,0 +1,40 @@
+﻿@model Global_College.mvc.Models.ViewModel.MyProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h1>My Profile</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@Model.Header.StudentName</h4>
+        <p><strong>Student Number:</strong> @Model.Header.StudentNumber</p>
+        <p><strong>Current Course:</strong> @Model.Header.CurrentCourseName</p>
+        <p><strong>Branch:</strong> @Model.Header.CurrentBranchName</p>
+        <p><strong>Class Code:</strong> @Model.Header.CurrentClassCode</p>
+    </div>
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Full Name</th>
+        <td>@Model.FullName</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>@Model.Email</td>
+    </tr>
+    <tr>
+        <th>Phone</th>
+        <td>@Model.Phone</td>
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td>@Model.Address</td>
+    </tr>
+    <tr>
+        <th>System Email</th>
+        <td>@Model.SystemEmail</td>
+    </tr>
+</table>

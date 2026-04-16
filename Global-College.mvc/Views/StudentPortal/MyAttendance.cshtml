@@ -1,0 +1,49 @@
+﻿@model Global_College.mvc.Models.ViewModel.MyAttendanceViewModel
+
+@{
+    ViewData["Title"] = "My Attendance";
+}
+
+<h1>My Attendance</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@Model.Header.StudentName</h4>
+        <p><strong>Current Course:</strong> @Model.Header.CurrentCourseName</p>
+        <p><strong>Branch:</strong> @Model.Header.CurrentBranchName</p>
+        <p><strong>Class Code:</strong> @Model.Header.CurrentClassCode</p>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Course</th>
+            <th>Branch</th>
+            <th>Class Code</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                <td>@item.CourseName</td>
+                <td>@item.BranchName</td>
+                <td>@item.ClassCode</td>
+                <td>
+                    @if (item.Present)
+                    {
+                        <span class="text-success">Present</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger">Absent</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

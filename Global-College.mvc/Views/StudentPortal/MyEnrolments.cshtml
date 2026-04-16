@@ -1,0 +1,40 @@
+﻿@model Global_College.mvc.Models.ViewModel.MyEnrolmentsViewModel
+
+@{
+    ViewData["Title"] = "My Enrolments";
+}
+
+<h1>My Enrolments</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@Model.Header.StudentName</h4>
+        <p><strong>Current Course:</strong> @Model.Header.CurrentCourseName</p>
+        <p><strong>Branch:</strong> @Model.Header.CurrentBranchName</p>
+        <p><strong>Class Code:</strong> @Model.Header.CurrentClassCode</p>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Course</th>
+            <th>Branch</th>
+            <th>Class Code</th>
+            <th>Enrol Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.CourseName</td>
+                <td>@item.BranchName</td>
+                <td>@item.ClassCode</td>
+                <td>@item.EnrolDate.ToString("dd/MM/yyyy")</td>
+                <td>@item.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
