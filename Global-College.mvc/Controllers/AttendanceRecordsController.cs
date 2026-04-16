@@ -2,6 +2,7 @@
 using Global_College.mvc.Data;
 using Global_College.mvc.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,14 @@ namespace Global_College.mvc.Controllers
     public class AttendanceRecordsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AttendanceRecordsController(ApplicationDbContext context)
+        public AttendanceRecordsController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: AttendanceRecords
@@ -41,6 +46,13 @@ namespace Global_College.mvc.Controllers
             }
 
             await LoadFilters(model);
+
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            if (model.BranchCourseId.HasValue && !allowedBranchCourseIds.Contains(model.BranchCourseId.Value))
+            {
+                return Forbid();
+            }
 
             if (model.BranchCourseId.HasValue)
             {
@@ -101,6 +113,13 @@ namespace Global_College.mvc.Controllers
                 ModelState.AddModelError("BranchCourseId", "Please select a class/group.");
             }
 
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            if (model.BranchCourseId.HasValue && !allowedBranchCourseIds.Contains(model.BranchCourseId.Value))
+            {
+                return Forbid();
+            }
+
             if (model.Students == null || !model.Students.Any())
             {
                 ModelState.AddModelError("", "No students found for the selected class/group.");
@@ -111,6 +130,18 @@ namespace Global_College.mvc.Controllers
             var courseEnrolmentIds = model.Students?
                 .Select(s => s.CourseEnrolmentId)
                 .ToList() ?? new List<int>();
+
+            var validCourseEnrolmentIds = await _context.CourseEnrolments
+                .Where(ce => courseEnrolmentIds.Contains(ce.Id) &&
+                             model.BranchCourseId.HasValue &&
+                             ce.BranchCourseId == model.BranchCourseId.Value)
+                .Select(ce => ce.Id)
+                .ToListAsync();
+
+            if (courseEnrolmentIds.Any() && validCourseEnrolmentIds.Count != courseEnrolmentIds.Count)
+            {
+                return Forbid();
+            }
 
             var existingAttendanceRecords = await _context.AttendanceRecords
                 .Where(a => courseEnrolmentIds.Contains(a.CourseEnrolmentId) && a.Date == selectedDate)
@@ -184,6 +215,8 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
             var attendanceRecord = await _context.AttendanceRecords
                 .Include(a => a.CourseEnrolment)
                     .ThenInclude(ce => ce.StudentProfile)
@@ -193,7 +226,9 @@ namespace Global_College.mvc.Controllers
                 .Include(a => a.CourseEnrolment)
                     .ThenInclude(ce => ce.BranchCourse)
                         .ThenInclude(bc => bc.Course)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == id &&
+                    allowedBranchCourseIds.Contains(m.CourseEnrolment.BranchCourseId));
 
             if (attendanceRecord == null)
             {
@@ -219,8 +254,11 @@ namespace Global_College.mvc.Controllers
 
             if (model.BranchId.HasValue)
             {
+                var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
                 model.BranchCourses = await _context.BranchCourses
-                    .Where(bc => bc.BranchId == model.BranchId.Value)
+                    .Where(bc => bc.BranchId == model.BranchId.Value &&
+                                 allowedBranchCourseIds.Contains(bc.Id))
                     .Include(bc => bc.Course)
                     .OrderBy(bc => bc.Course.Name)
                     .ThenBy(bc => bc.StartDate)
@@ -234,6 +272,24 @@ namespace Global_College.mvc.Controllers
                     })
                     .ToListAsync();
             }
+        }
+
+        private async Task<List<int>> GetAllowedBranchCourseIdsAsync()
+        {
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.BranchCourses
+                    .Select(bc => bc.Id)
+                    .ToListAsync();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            return await _context.FacultyProfiles
+                .Where(f => f.IdentityUserId == userId)
+                .SelectMany(f => f.FacultyCourseAssignments.Select(a => a.BranchCourseId))
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Global_College.domain.Models.Faculty;
 using Global_College.mvc.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Global_College.mvc.Controllers
 {
@@ -14,15 +15,21 @@ namespace Global_College.mvc.Controllers
     public class AssignmentResultsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AssignmentResultsController(ApplicationDbContext context)
+        public AssignmentResultsController(
+            ApplicationDbContext context,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: AssignmentResults
         public async Task<IActionResult> Index(int? assignmentId = null)
         {
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
             var query = _context.AssignmentResults
                 .Include(a => a.Assignment)
                     .ThenInclude(a => a.BranchCourse)
@@ -31,19 +38,27 @@ namespace Global_College.mvc.Controllers
                     .ThenInclude(a => a.BranchCourse)
                         .ThenInclude(bc => bc.Branch)
                 .Include(a => a.StudentProfile)
+                .Where(ar => allowedBranchCourseIds.Contains(ar.Assignment.BranchCourseId))
                 .AsQueryable();
 
             if (assignmentId.HasValue)
             {
-                query = query.Where(ar => ar.AssignmentId == assignmentId.Value);
-
                 var selectedAssignment = await _context.Assignments
                     .Include(a => a.BranchCourse)
                         .ThenInclude(bc => bc.Course)
-                    .FirstOrDefaultAsync(a => a.Id == assignmentId.Value);
+                    .FirstOrDefaultAsync(a =>
+                        a.Id == assignmentId.Value &&
+                        allowedBranchCourseIds.Contains(a.BranchCourseId));
 
-                ViewBag.SelectedAssignmentTitle = selectedAssignment?.Title;
-                ViewBag.SelectedClassCode = selectedAssignment?.BranchCourse?.ClassCode;
+                if (selectedAssignment == null)
+                {
+                    return Forbid();
+                }
+
+                query = query.Where(ar => ar.AssignmentId == assignmentId.Value);
+
+                ViewBag.SelectedAssignmentTitle = selectedAssignment.Title;
+                ViewBag.SelectedClassCode = selectedAssignment.BranchCourse?.ClassCode;
             }
 
             return View(await query.ToListAsync());
@@ -57,6 +72,8 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
             var assignmentResult = await _context.AssignmentResults
                 .Include(a => a.Assignment)
                     .ThenInclude(a => a.BranchCourse)
@@ -65,7 +82,9 @@ namespace Global_College.mvc.Controllers
                     .ThenInclude(a => a.BranchCourse)
                         .ThenInclude(bc => bc.Branch)
                 .Include(a => a.StudentProfile)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == id &&
+                    allowedBranchCourseIds.Contains(m.Assignment.BranchCourseId));
 
             if (assignmentResult == null)
             {
@@ -76,16 +95,27 @@ namespace Global_College.mvc.Controllers
         }
 
         // GET: AssignmentResults/Create
-        public IActionResult Create(int? assignmentId = null)
+        public async Task<IActionResult> Create(int? assignmentId = null)
         {
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
             var model = new AssignmentResult();
 
             if (assignmentId.HasValue)
             {
+                var assignmentAllowed = await _context.Assignments
+                    .AnyAsync(a =>
+                        a.Id == assignmentId.Value &&
+                        allowedBranchCourseIds.Contains(a.BranchCourseId));
+
+                if (!assignmentAllowed)
+                {
+                    return Forbid();
+                }
+
                 model.AssignmentId = assignmentId.Value;
             }
 
-            LoadDropDowns(model.AssignmentId, model.StudentProfileId);
+            await LoadDropDowns(model.AssignmentId, model.StudentProfileId);
             return View(model);
         }
 
@@ -94,6 +124,8 @@ namespace Global_College.mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Score,Feedback,StudentProfileId,AssignmentId")] AssignmentResult assignmentResult)
         {
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
             var assignment = await _context.Assignments
                 .Include(a => a.BranchCourse)
                 .FirstOrDefaultAsync(a => a.Id == assignmentResult.AssignmentId);
@@ -101,6 +133,10 @@ namespace Global_College.mvc.Controllers
             if (assignment == null)
             {
                 ModelState.AddModelError(nameof(assignmentResult.AssignmentId), "Invalid assignment.");
+            }
+            else if (!allowedBranchCourseIds.Contains(assignment.BranchCourseId))
+            {
+                return Forbid();
             }
             else
             {
@@ -156,7 +192,7 @@ namespace Global_College.mvc.Controllers
                 }
             }
 
-            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
+            await LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
@@ -168,13 +204,20 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
-            var assignmentResult = await _context.AssignmentResults.FindAsync(id);
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            var assignmentResult = await _context.AssignmentResults
+                .Include(ar => ar.Assignment)
+                .FirstOrDefaultAsync(ar =>
+                    ar.Id == id &&
+                    allowedBranchCourseIds.Contains(ar.Assignment.BranchCourseId));
+
             if (assignmentResult == null)
             {
                 return NotFound();
             }
 
-            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
+            await LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
@@ -188,6 +231,19 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            var existingResult = await _context.AssignmentResults
+                .Include(ar => ar.Assignment)
+                .FirstOrDefaultAsync(ar =>
+                    ar.Id == id &&
+                    allowedBranchCourseIds.Contains(ar.Assignment.BranchCourseId));
+
+            if (existingResult == null)
+            {
+                return NotFound();
+            }
+
             var assignment = await _context.Assignments
                 .Include(a => a.BranchCourse)
                 .FirstOrDefaultAsync(a => a.Id == assignmentResult.AssignmentId);
@@ -195,6 +251,10 @@ namespace Global_College.mvc.Controllers
             if (assignment == null)
             {
                 ModelState.AddModelError(nameof(assignmentResult.AssignmentId), "Invalid assignment.");
+            }
+            else if (!allowedBranchCourseIds.Contains(assignment.BranchCourseId))
+            {
+                return Forbid();
             }
             else
             {
@@ -240,7 +300,13 @@ namespace Global_College.mvc.Controllers
             {
                 try
                 {
-                    _context.Update(assignmentResult);
+                    existingResult.Score = assignmentResult.Score;
+                    existingResult.Feedback = assignmentResult.Feedback;
+                    existingResult.StudentProfileId = assignmentResult.StudentProfileId;
+                    existingResult.AssignmentId = assignmentResult.AssignmentId;
+                    existingResult.Grade = assignmentResult.Grade;
+
+                    _context.Update(existingResult);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index), new { assignmentId = assignmentResult.AssignmentId });
                 }
@@ -259,7 +325,7 @@ namespace Global_College.mvc.Controllers
                 }
             }
 
-            LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
+            await LoadDropDowns(assignmentResult.AssignmentId, assignmentResult.StudentProfileId);
             return View(assignmentResult);
         }
 
@@ -271,6 +337,8 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
             var assignmentResult = await _context.AssignmentResults
                 .Include(a => a.Assignment)
                     .ThenInclude(a => a.BranchCourse)
@@ -279,7 +347,9 @@ namespace Global_College.mvc.Controllers
                     .ThenInclude(a => a.BranchCourse)
                         .ThenInclude(bc => bc.Branch)
                 .Include(a => a.StudentProfile)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m =>
+                    m.Id == id &&
+                    allowedBranchCourseIds.Contains(m.Assignment.BranchCourseId));
 
             if (assignmentResult == null)
             {
@@ -294,7 +364,13 @@ namespace Global_College.mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var assignmentResult = await _context.AssignmentResults.FindAsync(id);
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            var assignmentResult = await _context.AssignmentResults
+                .Include(ar => ar.Assignment)
+                .FirstOrDefaultAsync(ar =>
+                    ar.Id == id &&
+                    allowedBranchCourseIds.Contains(ar.Assignment.BranchCourseId));
 
             if (assignmentResult != null)
             {
@@ -321,27 +397,32 @@ namespace Global_College.mvc.Controllers
             return percentage.ToString("0.00");
         }
 
-        private void LoadDropDowns(int? selectedAssignmentId = null, int? selectedStudentProfileId = null)
+        private async Task LoadDropDowns(int? selectedAssignmentId = null, int? selectedStudentProfileId = null)
         {
-            var assignments = _context.Assignments
+            var allowedBranchCourseIds = await GetAllowedBranchCourseIdsAsync();
+
+            var assignments = await _context.Assignments
                 .Include(a => a.BranchCourse)
                     .ThenInclude(bc => bc.Course)
                 .Include(a => a.BranchCourse)
                     .ThenInclude(bc => bc.Branch)
+                .Where(a => allowedBranchCourseIds.Contains(a.BranchCourseId))
                 .Select(a => new
                 {
                     a.Id,
                     Display = a.Title + " - " + a.BranchCourse.ClassCode + " - " + a.BranchCourse.Course.Name + " (" + a.BranchCourse.Branch.Name + ")"
                 })
-                .ToList();
+                .ToListAsync();
 
             var studentsQuery = _context.StudentProfiles.AsQueryable();
 
             if (selectedAssignmentId.HasValue)
             {
-                var assignment = _context.Assignments
+                var assignment = await _context.Assignments
                     .Include(a => a.BranchCourse)
-                    .FirstOrDefault(a => a.Id == selectedAssignmentId.Value);
+                    .FirstOrDefaultAsync(a =>
+                        a.Id == selectedAssignmentId.Value &&
+                        allowedBranchCourseIds.Contains(a.BranchCourseId));
 
                 if (assignment != null)
                 {
@@ -350,6 +431,10 @@ namespace Global_College.mvc.Controllers
                         .Include(ce => ce.StudentProfile)
                         .Select(ce => ce.StudentProfile!)
                         .Distinct();
+                }
+                else
+                {
+                    studentsQuery = _context.StudentProfiles.Where(sp => false);
                 }
             }
 
@@ -363,6 +448,24 @@ namespace Global_College.mvc.Controllers
 
             ViewData["AssignmentId"] = new SelectList(assignments, "Id", "Display", selectedAssignmentId);
             ViewData["StudentProfileId"] = new SelectList(students, "Id", "FullName", selectedStudentProfileId);
+        }
+
+        private async Task<List<int>> GetAllowedBranchCourseIdsAsync()
+        {
+            if (User.IsInRole("Administrator"))
+            {
+                return await _context.BranchCourses
+                    .Select(bc => bc.Id)
+                    .ToListAsync();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            return await _context.FacultyProfiles
+                .Where(f => f.IdentityUserId == userId)
+                .SelectMany(f => f.FacultyCourseAssignments.Select(a => a.BranchCourseId))
+                .Distinct()
+                .ToListAsync();
         }
     }
 }
