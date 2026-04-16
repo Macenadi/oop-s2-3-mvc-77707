@@ -24,7 +24,10 @@ namespace Global_College.mvc.Controllers
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Assignments
-                .Include(a => a.Course);
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Course)
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Branch);
 
             return View(await applicationDbContext.ToListAsync());
         }
@@ -38,13 +41,26 @@ namespace Global_College.mvc.Controllers
             }
 
             var assignment = await _context.Assignments
-                .Include(a => a.Course)
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Course)
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Branch)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (assignment == null)
             {
                 return NotFound();
             }
+
+            var totalResults = await _context.AssignmentResults
+                .CountAsync(ar => ar.AssignmentId == assignment.Id);
+
+            var totalStudentsInClass = await _context.CourseEnrolments
+                .CountAsync(ce => ce.BranchCourseId == assignment.BranchCourseId);
+
+            ViewBag.TotalResults = totalResults;
+            ViewBag.TotalStudentsInClass = totalStudentsInClass;
+            ViewBag.PendingResults = totalStudentsInClass - totalResults;
 
             return View(assignment);
         }
@@ -53,13 +69,13 @@ namespace Global_College.mvc.Controllers
         public IActionResult Create()
         {
             LoadDropDowns();
-            return View();
+            return View(new Assignment());
         }
 
         // POST: Assignments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,MaxScore,DueDate,CourseId")] Assignment assignment)
+        public async Task<IActionResult> Create([Bind("Id,Title,MaxScore,DueDate,BranchCourseId")] Assignment assignment)
         {
             try
             {
@@ -70,6 +86,26 @@ namespace Global_College.mvc.Controllers
                 ModelState.AddModelError(nameof(assignment.MaxScore), ex.Message);
             }
 
+            var branchCourse = await _context.BranchCourses
+                .FirstOrDefaultAsync(bc => bc.Id == assignment.BranchCourseId);
+
+            if (branchCourse == null)
+            {
+                ModelState.AddModelError(nameof(assignment.BranchCourseId), "Invalid class selected.");
+            }
+            else
+            {
+                if (assignment.DueDate < DateOnly.FromDateTime(DateTime.Today))
+                {
+                    ModelState.AddModelError(nameof(assignment.DueDate), "Due date cannot be earlier than today.");
+                }
+
+                if (assignment.DueDate < branchCourse.StartDate || assignment.DueDate > branchCourse.EndDate)
+                {
+                    ModelState.AddModelError(nameof(assignment.DueDate), "Due date must be within the class start and end dates.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(assignment);
@@ -77,7 +113,7 @@ namespace Global_College.mvc.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadDropDowns(assignment.CourseId);
+            LoadDropDowns(assignment.BranchCourseId);
             return View(assignment);
         }
 
@@ -95,14 +131,14 @@ namespace Global_College.mvc.Controllers
                 return NotFound();
             }
 
-            LoadDropDowns(assignment.CourseId);
+            LoadDropDowns(assignment.BranchCourseId);
             return View(assignment);
         }
 
         // POST: Assignments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,MaxScore,DueDate,CourseId")] Assignment assignment)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,MaxScore,DueDate,BranchCourseId")] Assignment assignment)
         {
             if (id != assignment.Id)
             {
@@ -116,6 +152,26 @@ namespace Global_College.mvc.Controllers
             catch (ArgumentException ex)
             {
                 ModelState.AddModelError(nameof(assignment.MaxScore), ex.Message);
+            }
+
+            var branchCourse = await _context.BranchCourses
+                .FirstOrDefaultAsync(bc => bc.Id == assignment.BranchCourseId);
+
+            if (branchCourse == null)
+            {
+                ModelState.AddModelError(nameof(assignment.BranchCourseId), "Invalid class selected.");
+            }
+            else
+            {
+                if (assignment.DueDate < DateOnly.FromDateTime(DateTime.Today))
+                {
+                    ModelState.AddModelError(nameof(assignment.DueDate), "Due date cannot be earlier than today.");
+                }
+
+                if (assignment.DueDate < branchCourse.StartDate || assignment.DueDate > branchCourse.EndDate)
+                {
+                    ModelState.AddModelError(nameof(assignment.DueDate), "Due date must be within the class start and end dates.");
+                }
             }
 
             if (ModelState.IsValid)
@@ -137,7 +193,7 @@ namespace Global_College.mvc.Controllers
                 }
             }
 
-            LoadDropDowns(assignment.CourseId);
+            LoadDropDowns(assignment.BranchCourseId);
             return View(assignment);
         }
 
@@ -150,7 +206,10 @@ namespace Global_College.mvc.Controllers
             }
 
             var assignment = await _context.Assignments
-                .Include(a => a.Course)
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Course)
+                .Include(a => a.BranchCourse)
+                    .ThenInclude(bc => bc.Branch)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (assignment == null)
@@ -190,9 +249,19 @@ namespace Global_College.mvc.Controllers
             return _context.Assignments.Any(e => e.Id == id);
         }
 
-        private void LoadDropDowns(int? selectedCourseId = null)
+        private void LoadDropDowns(int? selectedBranchCourseId = null)
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", selectedCourseId);
+            var branchCourses = _context.BranchCourses
+                .Include(bc => bc.Course)
+                .Include(bc => bc.Branch)
+                .Select(bc => new
+                {
+                    bc.Id,
+                    Display = bc.ClassCode + " - " + bc.Course.Name + " (" + bc.Branch.Name + ")"
+                })
+                .ToList();
+
+            ViewData["BranchCourseId"] = new SelectList(branchCourses, "Id", "Display", selectedBranchCourseId);
         }
     }
 }

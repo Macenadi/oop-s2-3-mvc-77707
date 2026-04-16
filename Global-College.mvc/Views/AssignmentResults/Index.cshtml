@@ -1,53 +1,86 @@
 ﻿@model IEnumerable<Global_College.domain.Models.Faculty.AssignmentResult>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Assignment Results";
 }
 
 <h1>Index</h1>
 
+@if (ViewBag.SelectedAssignmentTitle != null)
+{
+    <div class="alert alert-info">
+        Results for: <strong>@ViewBag.SelectedAssignmentTitle</strong> - @ViewBag.SelectedClassCode
+    </div>
+}
+
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Score)
+                Assignment
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Feedback)
+                Class Code
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.StudentProfile)
+                Course
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Assignment)
+                Branch
+            </th>
+            <th>
+                Student
+            </th>
+            <th>
+                Score
+            </th>
+            <th>
+                Grade
+            </th>
+            <th>
+                Feedback
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Score)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Feedback)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StudentProfile.Address)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Assignment.Title)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Assignment?.Title
+                </td>
+                <td>
+                    @item.Assignment?.BranchCourse?.ClassCode
+                </td>
+                <td>
+                    @item.Assignment?.BranchCourse?.Course?.Name
+                </td>
+                <td>
+                    @item.Assignment?.BranchCourse?.Branch?.Name
+                </td>
+                <td>
+                    @item.StudentProfile?.FullName
+                </td>
+                <td>
+                    @item.Score
+                </td>
+                <td>
+                    @(item.Grade + "%")
+                </td>
+                <td>
+                    @item.Feedback
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

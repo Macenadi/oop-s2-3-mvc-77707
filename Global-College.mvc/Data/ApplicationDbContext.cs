@@ -123,6 +123,12 @@ namespace Global_College.mvc.Data
     .HasForeignKey(e => e.BranchCourseId)
     .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Assignment>()
+    .HasOne(a => a.BranchCourse)
+    .WithMany()
+    .HasForeignKey(a => a.BranchCourseId)
+    .OnDelete(DeleteBehavior.Restrict);
+
             // =========================
             // SEED DATA
             // =========================
