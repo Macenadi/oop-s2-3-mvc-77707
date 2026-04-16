@@ -10,7 +10,9 @@
     <thead>
         <tr>
             <th>Exam</th>
+            <th>Class Code</th>
             <th>Course</th>
+            <th>Branch</th>
             <th>Score</th>
             <th>Grade</th>
         </tr>
@@ -19,8 +21,10 @@
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Exam!.Title</td>
-                <td>@item.Exam!.Course!.Name</td>
+                <td>@item.Exam?.Title</td>
+                <td>@item.Exam?.BranchCourse?.ClassCode</td>
+                <td>@item.Exam?.BranchCourse?.Course?.Name</td>
+                <td>@item.Exam?.BranchCourse?.Branch?.Name</td>
                 <td>@item.Score</td>
                 <td>@item.Grade</td>
             </tr>

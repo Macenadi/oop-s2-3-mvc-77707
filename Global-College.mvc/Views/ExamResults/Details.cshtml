@@ -1,42 +1,59 @@
 ﻿@model Global_College.domain.Models.Student.ExamResult
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Exam Result Details";
 }
 
-<h1>Details</h1>
+<h1>Exam Result Details</h1>
 
-<div>
-    <h4>ExamResult</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Score)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Score)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Grade)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Grade)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Exam)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Exam.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StudentProfile)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StudentProfile.Address)
-        </dd>
-    </dl>
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h4 class="mb-0">Result Information</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Exam</dt>
+            <dd class="col-sm-9">@Model.Exam?.Title</dd>
+
+            <dt class="col-sm-3">Class Code</dt>
+            <dd class="col-sm-9">@Model.Exam?.BranchCourse?.ClassCode</dd>
+
+            <dt class="col-sm-3">Course</dt>
+            <dd class="col-sm-9">@Model.Exam?.BranchCourse?.Course?.Name</dd>
+
+            <dt class="col-sm-3">Branch</dt>
+            <dd class="col-sm-9">@Model.Exam?.BranchCourse?.Branch?.Name</dd>
+
+            <dt class="col-sm-3">Student</dt>
+            <dd class="col-sm-9">@Model.StudentProfile?.FullName</dd>
+
+            <dt class="col-sm-3">Score</dt>
+            <dd class="col-sm-9">@Model.Score</dd>
+
+            <dt class="col-sm-3">Max Score</dt>
+            <dd class="col-sm-9">@Model.Exam?.MaxScore</dd>
+
+            <dt class="col-sm-3">Grade</dt>
+            <dd class="col-sm-9">@Model.Grade</dd>
+
+            <dt class="col-sm-3">Release Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.Exam?.ResultsReleased == true)
+                {
+                    <span class="badge bg-success">Released</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Provisional</span>
+                }
+            </dd>
+        </dl>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-controller="Exams" asp-action="Details" asp-route-id="@Model.ExamId" class="btn btn-info">Back to Exam</a>
+    <a asp-action="Index" asp-route-examId="@Model.ExamId" class="btn btn-secondary">Back to Results</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

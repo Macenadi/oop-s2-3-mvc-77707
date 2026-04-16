@@ -1,10 +1,11 @@
-﻿using Global_College.domain.Models.Administrator;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Global_College.domain.Models.Student
+namespace Global_College.mvc.ViewModels
 {
-    public class Exam
+    public class ExamFormViewModel
     {
         public int Id { get; set; }
 
@@ -23,6 +24,9 @@ namespace Global_College.domain.Models.Student
         [Display(Name = "Class Code")]
         public int BranchCourseId { get; set; }
 
-        public BranchCourse? BranchCourse { get; set; }
+        [Display(Name = "Course")]
+        public string? CourseName { get; set; }
+
+        public IEnumerable<SelectListItem> ClassCodes { get; set; } = new List<SelectListItem>();
     }
 }

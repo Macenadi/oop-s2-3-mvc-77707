@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Global_College.mvc.Controllers
 {
- 
     [Authorize(Roles = "Administrator")]
     public class StudentPortalController : Controller
     {
@@ -35,7 +34,11 @@ namespace Global_College.mvc.Controllers
 
             var results = await _context.ExamResults
                 .Include(er => er.Exam)
-                    .ThenInclude(e => e.Course)
+                    .ThenInclude(e => e.BranchCourse)
+                        .ThenInclude(bc => bc.Course)
+                .Include(er => er.Exam)
+                    .ThenInclude(e => e.BranchCourse)
+                        .ThenInclude(bc => bc.Branch)
                 .Where(er => er.StudentProfileId == studentProfile.Id &&
                              er.Exam != null &&
                              er.Exam.ResultsReleased)

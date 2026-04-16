@@ -117,6 +117,12 @@ namespace Global_College.mvc.Data
                 .HasForeignKey(h => h.FacultyProfileId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Exam>()
+    .HasOne(e => e.BranchCourse)
+    .WithMany()
+    .HasForeignKey(e => e.BranchCourseId)
+    .OnDelete(DeleteBehavior.Restrict);
+
             // =========================
             // SEED DATA
             // =========================
